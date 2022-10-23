@@ -8,6 +8,17 @@ struct ListNode {
     ListNode(int x, ListNode *next) : val(x), next(next) {}
 };
 
+void print(ListNode * head)
+{
+    ListNode * curr = head;
+    while (nullptr != curr)
+    {
+        std::cout << curr->val << "->";
+        curr = curr->next;
+    }
+    std::cout << "nullptr" << std::endl;
+}
+
 ListNode* append_naive(ListNode *head, const int &val)
 {
     /* empty */

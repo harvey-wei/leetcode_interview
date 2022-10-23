@@ -58,3 +58,11 @@ public:
         return reverse_list(dummy.next);
     }
 };
+
+
+int main()
+{
+    Solution sol;
+
+    return 0;
+}
