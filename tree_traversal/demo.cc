@@ -17,9 +17,58 @@ public:
     /*
        https://leetcode.com/problems/binary-tree-inorder-traversal/solution/
     */
-    vector<int> inorderTraversal(TreeNode* root) {
+    void inorderTraversal_helper(const TreeNode * const root, vector<int> &result)
+    {
+        if (nullptr == root)
+            /* Return to the calling function and proceed to its next line. */
+            return;
+
+        inorderTraversal_helper(root->left, result);
+        result.push_back(std::move(root->val));
+        inorderTraversal_helper(root->right, result);
+
+        return;
+    }
+
+    vector<int> inorderTraversal_recur(TreeNode* root) {
         vector<int> result;
-        int a = 2;
+        inorderTraversal_helper(root, result);
+        return result;
+    }
+
+    vector<int> inorderTraversal(TreeNode* root)
+    {
+        vector<int> result;
+        stack<TreeNode*> stack_trees;
+        TreeNode * curr = root;
+
+        while (nullptr != curr || !stack_trees.empty())
+        {
+            /* traverse the left subtree of curr.*/
+            while (nullptr != curr)
+            {
+                stack_trees.push(std::move(curr));
+                curr = curr->left;
+            }
+
+            /* pop the parent node. */
+            curr = stack_trees.top();
+            stack_trees.pop();
+            result.push_back(std::move(curr->val));
+
+            /* traverse the right sub-tree. */
+            curr = curr->right;
+        }
+
+        return result;
+    }
+
+    /* This method need a new data-structure threaded tree!
+       It is kind of like flattening/unrolling/unwrapping the binary tree.
+    */
+    vector<int> inorder_traversal_morris(TreeNode* root)
+    {
+        vector<int> result;
 
         return result;
     }
