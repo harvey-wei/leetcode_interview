@@ -1,6 +1,8 @@
 #include <iostream>
 #include <vector>
 #include <stack>
+#include <queue>
+
 using namespace std;
 
 struct TreeNode {
@@ -307,43 +309,154 @@ public:
     {
         vector<int> result;
         TreeNode * curr = root;
-        /* Here, we store them in rervese order. */
+        /* Here, we store them in rervese order in pre_order_traversal. (N->R->L)
+           We recursively thread the last node of R to the first node of L and
+           update the curr to its right child tree.
+        */
         while (nullptr != curr)
         {
-            result.push_back(curr->val);
-            while (nullptr != curr->right || nullptr != curr->right)
+            result.push_back(std::move(curr->val));
+            TreeNode* prev = curr;
+            if (nullptr != curr->right)
             {
-                if (nullptr == curr->left)
+                curr = curr->right;
+                /* Go left if possible until hitting the leaf. */
+                while (nullptr != curr->left || nullptr != curr->right)
                 {
-                    TreeNode* right = curr->right;
-                    curr->right = nullptr;
-                    curr = right;
+                    if (nullptr != curr->left)
+                    {
+                        curr = curr->left;
+                    }
+                    else if(nullptr != curr->right)
+                    {
+                        curr = curr->right;
+                    }
                 }
-                else if (nullptr == curr->right)
-                {
-                    TreeNode* left = curr->left;
-                    curr->left = nullptr;
-                    curr = left;
-                }
-                else
-                {
 
-                }
+                /* Heat the last node of right subtree. */
+                curr->right = prev->left;
+                prev->left = nullptr;
+                curr = prev->right;
             }
-
+            else
+            {
+                curr = curr->left;
+            }
         }
 
-        /* Dont't forget to reverse the order! */
+        /* Dont't forget to reverse the order!
+           Reverse the array by double pointers rather than alloacte another array of the same size.
+        */
+        int l = 0;
+        int r = result.size() - 1;
+        while (l < r)
+        {
+            swap(result[l], result[r]);
+            // update the l and r
+            ++l;
+            --r;
+        }
+
         return result;
     }
 
     /*
        https://leetcode.com/problems/binary-tree-level-order-traversal/solution/
+       The definition of depth, level, and height count the number of edges!
+       https://stackoverflow.com/questions/59151282/what-is-level-of-root-node-in-a-tree
     */
-    vector<vector<int>> levelOrder(TreeNode* root) {
+    void level_order_recur_helper(TreeNode* root, int level, vector<vector<int>>& result)
+    {
+        /* base case: hit the dummy null node of leaf!
+           return to the calling function and do the backward process!
+        */
+        if (nullptr == root) return;
+
+        /* We start from level 0 and increase it by one after one recursive call.
+           level past the end of result by one : level = result.size()
+           Don't use level > result.size() - 1.
+        */
+        if (level == result.size()) result.push_back(std::move(vector<int>()));
+
+        result[level].push_back(std::move(root->val));
+        level_order_recur_helper(root->left, level + 1, result);
+        level_order_recur_helper(root->right, level + 1, result);
+    }
+
+    vector<vector<int>> level_order_recur(TreeNode* root)
+    {
+        /* Space complexity is the depth of call stacks!
+           worst case: O(N) a linked list of N nodes!
+           best case: O(logN).
+           We don't include the result vector!
+        */
         vector<vector<int>> result;
+        level_order_recur_helper(root, 0, result);
         return result;
     }
+
+    /* pop followed by its child nodes! */
+    vector<vector<int>> level_order(TreeNode* root)
+    {
+        vector<vector<int>> result;
+        queue<TreeNode*> queue_trees;
+        int level = 0;
+        int curr_cnt = 0;
+        int next_cnt = 0;
+
+        if (nullptr != root)
+        {
+            queue_trees.push(root);
+            ++curr_cnt;
+        }
+
+        while (!queue_trees.empty())
+        {
+            TreeNode * top = queue_trees.front();
+            queue_trees.pop();
+            --curr_cnt;
+
+            /* Traverse level by level and from top to bottom.
+               level start at zero!
+               Once level goes past the end of result, we need push a vector.
+            */
+            if (level == result.size())
+            {
+                result.push_back(std::move(vector<int>()));
+            }
+
+            result[level].push_back(std::move(top->val));
+
+            if (nullptr != top->left)
+            {
+                queue_trees.push(top->left);
+                ++next_cnt;
+            }
+
+            if (nullptr != top->right)
+            {
+                queue_trees.push(top->right);
+                ++next_cnt;
+            }
+
+            if (0 == curr_cnt)
+            {
+                ++level;
+                curr_cnt = next_cnt;
+                next_cnt = 0;
+            }
+        }
+
+        return result;
+    }
+
+    vector<vector<int>> level_order_morris(TreeNode* root)
+    {
+        vector<vector<int>> result;
+
+        return result;
+    }
+
 };
 
 int main()
