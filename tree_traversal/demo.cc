@@ -63,47 +63,6 @@ public:
         return result;
     }
 
-    /* This method needs a new data-structure threaded tree!
-       It is kind of like flattening/unrolling/unwrapping the binary tree.
-       Ref: https://en.wikipedia.org/wiki/Threaded_binary_tree
-       Make all right child pointers that would normally be null point to the in-order successor
-       (if not null), and all left child that would normally be null point to the in-order
-       predecessor of the node (if exists).
-       This assumes the traversal order is the same as in-order traversal of the tree.
-    */
-    vector<int> inorder_traversal_morris(TreeNode* root)
-    {
-        vector<int> result;
-        TreeNode* curr = root;
-        TreeNode* prev = nullptr;
-        while (nullptr != curr)
-        {
-            if (nullptr == curr->left)
-            {
-                /* No left subtree! */
-                result.push_back(std::move(curr->val));
-                curr = curr->right;
-            }
-            else
-            {
-                /* Find the right-most node of the left subtree. */
-                TreeNode * left_subtree = curr->left;
-                prev = curr;
-                curr = curr->left;
-                prev->left = nullptr; /* Null out the left pointer of parent node!*/
-                while (nullptr != curr->right)
-                {
-                    curr = curr->right;
-                }
-
-                curr->right = prev;
-                curr = left_subtree;
-            }
-        }
-
-        return result;
-    }
-
     void post_order_traversal_helper(TreeNode* root, vector<int>& result)
     {
         /* base case and return to the calling position and proceed to the next line. */
@@ -209,12 +168,172 @@ public:
 
         return result;
     }
+
     /*
        https://leetcode.com/problems/binary-tree-preorder-traversal/
     */
+    void preorderTraversalHelper(TreeNode* root, vector<int>& result)
+    {
+        if (nullptr == root) return;
+
+        result.push_back(std::move(root->val));
+        preorderTraversalHelper(root->left, result);
+        preorderTraversalHelper(root->right, result);
+    }
+
+    vector<int> preorderTraversal_recur(TreeNode* root) {
+        vector<int> result;
+        preorderTraversalHelper(root, result);
+        return result;
+    }
+
     vector<int> preorderTraversal(TreeNode* root) {
         vector<int> result;
+        stack<TreeNode*> stack_trees;
+        TreeNode* curr = root;
 
+        while (nullptr != curr || !stack_trees.empty())
+        {
+            while (nullptr != curr)
+            {
+                result.push_back(std::move(curr->val));
+                stack_trees.push(curr);
+                curr = curr->left;
+            }
+
+            curr = stack_trees.top();
+            stack_trees.pop();
+            curr = curr->right;
+        }
+
+        return result;
+    }
+
+    /* Morris Traversal
+       Time: O(N) with N being the total of nodes.
+       Each node is travsed at most two times. The first time is to connect to its successor while
+       the second time is to really traverse it (store it in the result!).
+       Hence, the overall time complexity is O(N).
+       Space: O(1)
+    */
+    vector<int> preorder_traversal_morris(TreeNode* root)
+    {
+        vector<int> result;
+
+        TreeNode * curr = root;
+
+        while (nullptr != curr)
+        {
+            result.push_back(std::move(curr->val));
+            if (nullptr != curr->left)
+            {
+                /* Find the node which is the predecessor of the prev->right by going right down to
+                   the leaf if possible!
+
+                */
+                TreeNode * prev = curr;
+                curr = curr->left;
+                while (nullptr != curr->left || nullptr != curr->right)
+                {
+                    if (nullptr != curr->right)
+                    {
+                        /* Go right if possible. */
+                        curr = curr->right;
+                    }
+                    else
+                    {
+                        /* Right is imposiible and just try going left. */
+                        curr = curr->left;
+                    }
+                }
+
+                TreeNode * prev_right = prev->right;
+                prev->right = prev->left;
+                prev->left = nullptr;
+                curr->right = prev_right;
+                curr = prev->right;
+            }
+            else
+            {
+                curr= curr->right;
+            }
+
+        }
+        return result;
+    }
+
+    /* This method needs a new data-structure threaded tree!
+       It is kind of like flattening/unrolling/unwrapping the binary tree.
+       Ref: https://en.wikipedia.org/wiki/Threaded_binary_tree
+       Make all right child pointers that would normally be null point to the in-order successor
+       (if not null), and all left child that would normally be null point to the in-order
+       predecessor of the node (if exists).
+       This assumes the traversal order is the same as in-order traversal of the tree.
+    */
+    vector<int> inorder_traversal_morris(TreeNode* root)
+    {
+        vector<int> result;
+        TreeNode* curr = root;
+        TreeNode* prev = nullptr;
+        while (nullptr != curr)
+        {
+            if (nullptr == curr->left)
+            {
+                /* No left subtree! */
+                result.push_back(std::move(curr->val));
+                curr = curr->right;
+            }
+            else
+            {
+                /* Find the right-most node of the left subtree. */
+                TreeNode * left_subtree = curr->left;
+                prev = curr;
+                curr = curr->left;
+                prev->left = nullptr; /* Null out the left pointer of parent node!*/
+                while (nullptr != curr->right)
+                {
+                    curr = curr->right;
+                }
+
+                curr->right = prev;
+                curr = left_subtree;
+            }
+        }
+
+        return result;
+    }
+
+    vector<int> post_order_traversal_morris(TreeNode* root)
+    {
+        vector<int> result;
+        TreeNode * curr = root;
+        /* Here, we store them in rervese order. */
+        while (nullptr != curr)
+        {
+            result.push_back(curr->val);
+            while (nullptr != curr->right || nullptr != curr->right)
+            {
+                if (nullptr == curr->left)
+                {
+                    TreeNode* right = curr->right;
+                    curr->right = nullptr;
+                    curr = right;
+                }
+                else if (nullptr == curr->right)
+                {
+                    TreeNode* left = curr->left;
+                    curr->left = nullptr;
+                    curr = left;
+                }
+                else
+                {
+
+                }
+            }
+
+        }
+
+        /* Dont't forget to reverse the order! */
         return result;
     }
 
@@ -223,7 +342,6 @@ public:
     */
     vector<vector<int>> levelOrder(TreeNode* root) {
         vector<vector<int>> result;
-
         return result;
     }
 };
