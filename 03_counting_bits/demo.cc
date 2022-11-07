@@ -1,6 +1,5 @@
 #include <iostream>
 #include <vector>
-#include <cassert>
 #include <random> // for random device
 using namespace std;
 
