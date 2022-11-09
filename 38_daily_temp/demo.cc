@@ -20,22 +20,16 @@ public:
 
         for (int i = 0; i < temperatures.size(); ++i)
         {
-            if (stack_idx.empty())
+            /* pop until current is smaller than the top. */
+            while (!stack_idx.empty() && temperatures[stack_idx.top()] < temperatures[i])
             {
-                stack_idx.push(std::move(i));
+                /* Pop out the idx for which the number of waiting days is found. */
+                result[stack_idx.top()] = i - stack_idx.top();
+                stack_idx.pop();
             }
-            else
-            {
-                /* pop until current is smaller than the top. */
-                while (!stack_idx.empty() && temperatures[stack_idx.top()] < temperatures[i])
-                {
-                    /* Pop out the idx for which the number of waiting days is found. */
-                    result[stack_idx.top()] = i - stack_idx.top();
-                    stack_idx.pop();
-                }
 
-                stack_idx.push(i);
-            }
+            /* then push */
+            stack_idx.push(std::move(i));
         }
 
         return result;
