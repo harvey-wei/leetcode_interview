@@ -118,6 +118,14 @@ public:
                 */
                 stack_tree.pop();
                 result.push_back(std::move(curr->val));
+
+                /*
+                   Different from pre-order and in-order traversal.
+                   Here, we need curr an prev to track two consecutive traversed subtrees.
+
+                   Why to set curr nullptr?
+                   In order to pop in the next iteration.
+                */
                 prev = curr;
                 curr = nullptr;
             }
@@ -199,6 +207,11 @@ public:
             while (nullptr != curr)
             {
                 result.push_back(std::move(curr->val));
+                /* 1. curr for scanning
+                   2. here pop for traversed.
+                   3. after popped, the push goes into the next iteration where go to the left-most
+                   leaf.
+                */
                 stack_trees.push(curr);
                 curr = curr->left;
             }

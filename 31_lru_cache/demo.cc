@@ -1,5 +1,6 @@
 #include <iostream>
 #include <unordered_map>
+#include <list>
 using namespace std;
 
 
@@ -126,14 +127,14 @@ public:
 
 };
 
-class LRUCache {
+class LRUCache_ {
 private:
     unordered_map<int, DoublyLinkedNode*> key2node;
     /* DoublyLinkedList linked_list; */
     int cap;
 public:
     DoublyLinkedList linked_list;
-    LRUCache(int capacity)
+    LRUCache_(int capacity)
     {
         cap = capacity;
     }
@@ -202,6 +203,12 @@ void test_list()
  * obj->put(key,value);
  */
 
+/**
+ * Your LRUCache object will be instantiated and called as such:
+ * LRUCache* obj = new LRUCache(capacity);
+ * int param_1 = obj->get(key);
+ * obj->put(key,value);
+ */
 int main()
 {
     /* LRUCache* obj = new LRUCache(2); */

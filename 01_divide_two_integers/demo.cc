@@ -185,6 +185,16 @@ public:
         int divide(int dividend, int divisor)
         {
             assert(divisor != 0);
+            /*
+               1. double A by A + A;
+               2. halve A by
+               (A + 1) >> 1 if A is negative
+               A >> 1 if A is positive
+               3. Key insight: difference = dividend - largest double < largest double if all are
+               4. Termination: if |dividend| < |current double of divisors|
+               5. Check underflow before double
+               2 * neg_int >= INT_MIN => neg_int >= int_min_half (= (INT_MIN + 1) >> 1)
+            */
 
             /* Corner case: INT_MIN / -1 = INT_MAX + 1 -> quotient is overflowing!*/
             if (INT_MIN == dividend && -1 == divisor)
@@ -209,10 +219,17 @@ public:
 
             /* Find the largest double of divisors. Thinking in positives! */
             int largest_double = divisor;
-            int largest_power_of_two = -1; // INT_MIN / 1 = -INT_MIN Hence, you can not use 1!
+            // INT_MIN / 1 = INT_MIN in which case, largest_power_of_two == INT_MIN.
+            // Hence, you can not use 1!
+            int largest_power_of_two = -1;
             const int half_int_min = (INT_MIN + 1) >> 1;
 
             /* 2 * double >= INT_MIN -> double > half_int_min */
+            /*
+               When to stop?
+               largest_double < half_int_min
+               OR largest_double + largest_double WILL >= dividend (all in negative )
+            */
             while (largest_double >= half_int_min && (largest_double + largest_double) >= dividend)
             {
                 largest_double += largest_double;
@@ -224,6 +241,7 @@ public:
                positives. Think in positives! Hence, we can subtract the doubles from largest to
                smallest. But you should check to see if dividend >= doubles[i]. */
             /* When to terminate? |dividend| < |divisor| */
+            /* Here, we maintain the value of divisor and update divident and largest_double*/
             while (divisor >= dividend)
             {
                 if (dividend <= largest_double)
