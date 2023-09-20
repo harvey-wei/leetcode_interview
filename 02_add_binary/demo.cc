@@ -22,6 +22,7 @@ public:
             if (idx_a < 0 && idx_b < 0) break;
 
             /* Perform bitwise addition of binary. */
+            /* std::string support indexing due to the vector of chars. */
             int a_val = idx_a >= 0 ? a[idx_a] - '0' : 0;
             int b_val = idx_b >= 0 ? b[idx_b] - '0' : 0;
             int bit_sum = a_val + b_val + carry;

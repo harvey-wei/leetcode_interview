@@ -33,7 +33,7 @@ class Robot {
 
 class Solution {
 public:
-    void backtrac(Robot& robot)
+    void backtrace(Robot& robot)
     {
         /* reverse the direction */
         robot.turnRight();
@@ -47,6 +47,9 @@ public:
         robot.turnRight();
 
     }
+
+/* Memoization + recursion = dynamic programming */
+
     void cleanRoomHelper(Robot& robot, int x, int y, int dir, set<pair<int, int>>& visisted)
     {
         pair<int, int> curr_pos(x, y);
@@ -71,7 +74,7 @@ public:
                 cleanRoomHelper(robot, x_new, y_new, dir_new, visisted);
 
                 /* backtrack */
-                backtrac(robot);
+                backtrace(robot);
             }
 
             /* Make the next choice have the right direction. */

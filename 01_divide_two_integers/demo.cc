@@ -263,6 +263,70 @@ public:
 
         }
 
+    int divide_(int dividend, int divisor)
+    {
+        /* Overflow Case: INT_MIN / -1 = INT_MAX + 1*/
+        if (INT_MIN == dividend && -1 == divisor)
+        {
+            return INT_MAX;
+        }
+
+        /* Convert positive to negative to leverage the larger range of negative integer. */
+        int num_of_neg = 2;
+
+        if (dividend > 0)
+        {
+            --num_of_neg;
+            dividend = -dividend;
+        }
+
+        if (divisor > 0)
+        {
+            --num_of_neg;
+            divisor = - divisor;
+        }
+
+        /* Find the largest doubles of divisor not exceeding dividend. */
+        int int_min_half = (INT_MIN + 1) >> 1; // using right shift instead of * 0.5
+        int largest_double = divisor;
+        int largest_power_of_two = -1; // To address the case INT_MIN / 1 = INT_MIN.
+
+        /* Note that we work with negatives from this point on.  Think in absolute values. */
+        /* Check out-of-range before doubling! */
+        /*largest_double + largest_double may be underflow. Hence, we check the half!*/
+        while (largest_double >= int_min_half && (largest_double + largest_double) >= dividend)
+        {
+            largest_double += largest_double;
+            largest_power_of_two += largest_power_of_two;
+        }
+
+        /* Subtract from largest double and its haleves. */
+        /* Again, we work with negatives. */
+        int quotient = 0;
+        while (dividend <= divisor)
+        {
+
+            /* dividend < largest_double is ensured  but divident can also < largest_double / 2*/
+            /* see the example in the leetcode tutorial. */
+            if (dividend <= largest_double)
+            {
+                dividend -= largest_double;
+                quotient += largest_power_of_two;
+            }
+
+            largest_double = (largest_double + 1) >> 1;
+            largest_power_of_two = (largest_power_of_two + 1) >> 1;
+
+        }
+
+        if (1 != num_of_neg)
+        {
+            quotient = -quotient;
+        }
+
+        return quotient;
+    }
+
     void stress_test()
     {
         std::random_device rd; // for seeding

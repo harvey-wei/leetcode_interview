@@ -1,6 +1,7 @@
 #include <iostream>
 #include <list>
 #include <vector>
+#include <cassert>
 
 class Graph
 {
@@ -81,7 +82,6 @@ void print_vec(std::vector<int>& vec)
 
 int main()
 {
-
     Graph g(6);
     g.add_edge(0, 1);
     g.add_edge(1, 0);
