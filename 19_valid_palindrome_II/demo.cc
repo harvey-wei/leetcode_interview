@@ -3,7 +3,8 @@
 #include <cctype>
 using namespace std;
 /*
-   https://www.programiz.com/c-programming/library-function/ctype.h
+    https://www.programiz.com/c-programming/library-function/ctype.h
+    ref: https://leetcode.com/problems/valid-palindrome-ii/
 */
 
 class Solution {
@@ -55,9 +56,60 @@ public:
     }
 };
 
+class SolutionTwo
+{
+public:
+    bool is_valid_palindrome(const string& s, int l, int r)
+    {
+        if (l > r) return true;
+
+
+        while (l <= r)
+        {
+            if (s[l] != s[r])
+            {
+                return false;
+            }
+            else
+            {
+                ++l;
+                --r;
+            }
+        }
+
+        return true;
+    };
+
+    bool validPalindrome(string s)
+    {
+        /* s is non-empty and consists of lowercase English letters. */
+        int l = 0;
+        int r = s.size() - 1;
+
+        while (l <= r)
+        {
+            if (s[l] != s[r])
+            {
+                int start = l + 1;
+                int end = r - 1;
+
+                /* delete left or right */
+                return is_valid_palindrome(s, start, r) || is_valid_palindrome(s, l, end);
+            }
+            else
+            {
+                ++l;
+                --r;
+            }
+        }
+
+        return true;
+    }
+};
+
 int main()
 {
-    Solution sol;
+    SolutionTwo sol;
     /* string s_three = "A man, a plan, a canal: Panama"; */
     /* string s_one = "race a car"; */
     /* string s_two = " "; */

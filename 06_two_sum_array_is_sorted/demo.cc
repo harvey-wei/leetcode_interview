@@ -4,6 +4,7 @@
 #include <unordered_map>
 using namespace std;
 
+/* https://leetcode.com/problems/two-sum-ii-input-array-is-sorted/ */
 class Solution {
 public:
     /* Ignore the key property that the array is sorted. We can use hash set to do membership. */
@@ -66,7 +67,7 @@ public:
         /* Time: O(logN)
            Space: O(1)
         */
-        assert(nums.size() >= 1);
+        /* assert(nums.size() >= 1); */
         for (int i = 0; i < nums.size() - 1; ++i)
         {
             if (nums[i] > nums[i + 1])
@@ -147,6 +148,7 @@ public:
             int curr_sum = numbers[left] + numbers[right];
             if (target == curr_sum)
             {
+                /* convert zero-based index to one-based index. */
                 indices[0] += left;
                 indices[1] += right;
                 break;
@@ -165,6 +167,43 @@ public:
 
         return indices;
     }
+
+    vector<int> twoSum_(vector<int>& numbers, int target)
+    {
+        /* numbers.size() >= 2 */
+        /* Initialize indices to 1 in order to convert 0-index to 1-index. */
+        vector<int> indices(2, 1);
+        /* Note that numbers is sorted in non-descending order. */
+
+        int l = 0;
+        int r = numbers.size() - 1;
+        int s = 0;
+
+        while (l < r)
+        {
+            s = numbers[l] + numbers[r];
+
+            if (s == target)
+            {
+                indices[0] += l;
+                indices[1] += r;
+
+                break;
+            }
+            else if (s > target)
+            {
+                /* Advance the right pointer. */
+                --r;
+            }
+            else
+            {
+                /* s < target. Advance the left pointer. */
+                ++l;
+            }
+        }
+
+        return indices;
+    }
 };
 
 void print_vec(const vector<int> & vecs)
@@ -177,9 +216,45 @@ void print_vec(const vector<int> & vecs)
     cout << endl;
 }
 
+
+class SolutionTwo {
+public:
+    vector<int> twoSum(vector<int>& numbers, int target)
+    {
+        std::vector<int> result;
+        int l = 0;
+        int r = numbers.size() - 1;
+
+        while (l < r)
+        {
+            /* Check the sum of numbers[l] and numbers[r] and update l and r*/
+            if (target == numbers[l] + numbers[r])
+            {
+                result.push_back(l + 1);
+                result.push_back(r + 1);
+
+                break;
+            }
+            else if (numbers[l] + numbers[r] > target)
+            {
+                --r;
+            }
+            else
+            {
+                /* sum < target */
+                ++l;
+            }
+        }
+
+        /* index should be added by 1 to 1-based indexing. */
+
+        return result;
+    }
+};
+
 int main()
 {
-    Solution sol;
+    SolutionTwo sol;
     /* vector<int> numbers = {2,7,11,15}; */
     /* int target = 9; */
 

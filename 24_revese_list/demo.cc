@@ -1,34 +1,41 @@
-#include <iostream>
-
-struct ListNode {
+struct ListNode
+{
     int val;
-    ListNode *next;
-    ListNode() : val(0), next(nullptr) {}
-    ListNode(int x) : val(x), next(nullptr) {}
-    ListNode(int x, ListNode *next) : val(x), next(next) {}
+    ListNode * next;
+
+    ListNode() : val(0), next(nullptr) {} // default constr
+    ListNode(int x) :val(x), next(nullptr) {}
+    ListNode(int x, ListNode* next) : val(x), next(next) {}
 };
 
-class Solution {
-public:
+class Solution
+{
     ListNode* reverseList(ListNode* head)
     {
+        if (nullptr == head) return nullptr;
+
+        /* Old head points to nullptr as tail. */
         ListNode * prev = nullptr;
         ListNode * curr = head;
+        ListNode * next;
 
         while (nullptr != curr)
         {
-            ListNode * next = curr->next;
+            next = curr->next;
             curr->next = prev;
 
+            /* update curr and next */
             prev = curr;
             curr = next;
         }
+        /*  curr == nullptr but prev is the new head */
 
-        /* Don't forget to work an example by hand to clarify the boundary condition. */
         return prev;
     }
 };
-int main()
+
+int
+main(int argc, char** argv)
 {
     return 0;
 }

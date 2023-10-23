@@ -7,6 +7,60 @@ using namespace std;
 /* ref: https://www.geeksforgeeks.org/stdstring-class-in-c/ */
 class Solution {
 public:
+    string addBinary_(string a, string b)
+    {
+        /* Just view the std::string as a vector of chars */
+        string s = ""; // empty
+
+        /* bit sum = bit_a + bit_b + carry of prev_bit [0, 3] */
+
+        int a_idx = a.size() - 1;
+        int b_idx = b.size() - 1;
+
+        int bit_sum = 0;
+        int carry = 0;
+
+        while (a_idx >= 0 || b_idx >= 0)
+        {
+            /* Work on ASCII code to get the binary value of char '0' or '1' */
+            bit_sum = (a_idx >= 0 ? a[a_idx] - '0' : 0) + (b_idx >= 0 ? b[b_idx] - '0' : 0)
+                    + carry;
+
+            /* deal with carry */
+            if (2 == bit_sum)
+            {
+                carry = 1;
+                s.push_back('0');
+            }
+            else if (3 == bit_sum)
+            {
+                /* 3 == bit_sum */
+                carry = 1;
+                s.push_back('1');
+            }
+            else
+            {
+            /* if (0 == bit_sum || 1 == bit_sum) */
+                carry = 0;
+                s.push_back(bit_sum + '0');
+            }
+
+            /* update idx */
+            --a_idx;
+            --b_idx;
+        }
+
+        /* If the carry == 1*/
+        if (1 == carry)
+        {
+            s.push_back('1');
+        }
+
+        std::reverse(s.begin(), s.end());
+
+        return s;
+    }
+
     string addBinary(string a, string b)
     {
         assert(a.length() >= 1u && b.length() >= 1u);
@@ -67,7 +121,7 @@ int main()
     /* string b = "1011"; */
     string a = "1111";
     string b = "1111";
-    string s = sol.addBinary(a, b);
+    string s = sol.addBinary_(a, b);
     std::cout << a << " + " << b << " = " << s << std::endl;
 
     /* https://stackoverflow.com/questions/4951796/how-to-reverse-an-stdstring */

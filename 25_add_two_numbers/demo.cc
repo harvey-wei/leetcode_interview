@@ -1,5 +1,3 @@
-#include <iostream>
-
 struct ListNode {
     int val;
     ListNode *next;
@@ -10,59 +8,75 @@ struct ListNode {
 
 class Solution {
 public:
-    ListNode* reverse_list(ListNode *head)
+    ListNode* reverse_list(ListNode* head)
     {
-        ListNode * prev = nullptr;
-        ListNode * curr = head;
+        if (nullptr == head)
+        {
+            return nullptr;
+        }
+
+        ListNode* prev = nullptr;
+        ListNode* curr = head;
+        ListNode* next;
 
         while (nullptr != curr)
         {
-            ListNode * next = curr->next;
+            next = curr->next;
             curr->next = prev;
+
+            // update curr and prev
             prev = curr;
             curr = next;
         }
 
-        /* Might need to rectify. */
+        /* At this point, curr is empty tail node and prev is the new head. */
         return prev;
     }
 
-    /*
-       The number of nodes in each linked list is in the range [1, 100].
-    */
-    ListNode* addTwoNumbers(ListNode* l1, ListNode* l2)
-    {
+    ListNode* addTwoNumbers(ListNode* l1, ListNode* l2) {
+        /* List is guaranteed to be non-empty. */
         l1 = reverse_list(l1);
         l2 = reverse_list(l2);
 
-        ListNode dummy = ListNode(0, nullptr);
-        ListNode *curr = &dummy;
+        ListNode* ptr_l1 = l1;
+        ListNode* ptr_l2 = l2;
 
+        ListNode dummy = ListNode();
+        ListNode* ptr_sum = &dummy;
+
+        int curr_sum = 0;
         int carry = 0;
-        while (nullptr != l1 || nullptr != l2 || 0 != carry)
+
+        while (nullptr != ptr_l1 || nullptr != ptr_l2)
         {
-            int s = (nullptr != l1 ? l1->val : 0) +
-                    (nullptr != l2 ? l2->val : 0) + carry;
-            carry = s / 10; // integer division
+            curr_sum = ((nullptr != ptr_l1) ? ptr_l1->val : 0) +
+                    ((nullptr != ptr_l2) ? ptr_l2->val : 0) + carry;
 
-            /* To create a list and return it, you have dynamically allocate the memory for each
-               node. */
-            curr->next = new ListNode(s % 10);
+            /* update curr_sum and carry */
+            carry = curr_sum / 10;
+            curr_sum = curr_sum % 10;
 
-            // update l1 and  l2 and curr
-            l1 = nullptr != l1 ? l1->next : nullptr;
-            l2 = nullptr != l2 ? l2->next : nullptr;
-            curr = curr->next;
+            ptr_sum->next = new ListNode(curr_sum);
+
+            /* update ptr_l1 , ptr_l2, and ptr_sum */
+            if (nullptr != ptr_l1) ptr_l1 = ptr_l1->next;
+            if (nullptr != ptr_l2) ptr_l2 = ptr_l2->next;
+
+            ptr_sum = ptr_sum->next;
+        }
+
+        /* Deal with the last non-zero carry! */
+        if (carry > 0)
+        {
+            ptr_sum->next = new ListNode(carry);
         }
 
         return reverse_list(dummy.next);
     }
 };
 
-
-int main()
+int
+main(int argc, char** argv)
 {
-    Solution sol;
-
     return 0;
 }

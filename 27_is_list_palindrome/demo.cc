@@ -1,7 +1,3 @@
-#include <iostream>
-#include <stack>
-using namespace std;
-
 struct ListNode {
     int val;
     ListNode *next;
@@ -10,172 +6,123 @@ struct ListNode {
     ListNode(int x, ListNode *next) : val(x), next(next) {}
 };
 
-ListNode * append(ListNode *head, const int &val)
-{
-    /* using a dummy node to point to head even if head is nullptr.
-       If the list is empty, the dummy node is the end node whose next is nullptr.
-    */
-    ListNode dummy_node = ListNode(0, head);
-    ListNode * node_ptr = &dummy_node;
+class Solution { public: ListNode* bisect_list(ListNode* head) {
+        /* zero and singleton list can not be biscected! */
+        if (nullptr == head || nullptr == head->next) return nullptr;
 
-    /* Walk from dummy_node to the end node. */
-    while (nullptr != node_ptr->next)
-    {
-        node_ptr = node_ptr->next;
-    }
+        /* Both fast and slow start from the head in which cases we count the # of edges. */
+        /*
+         * Even # of nodes: 1->2->3->4->5->6
+         * Fast: 1, 3, 5 but fast->next is not null
+         * Slow: 1, 2, 3  but  4 as the head of second half
+         * Odd # of nodes: 1->2->3->4->5
+         * Fast: 1, 3, 5 fast->next == null
+         * Slow: 1, 2, 3 but 4 as the head of a second half
+         * But the rear half has one more nodes than the front half!
+         *
+         * Fail if there are only two nodes.
+         * 1->2
+         * Fast: 1
+         * Slow: 1
+         *
+         * Hence, we need to start from a imagine dummy head to make the number of steps == # of
+         nodes.
+         * Even # of nodes: 1->2->3->4->5->6
+         * Fast: 2, 4, 6 => fast->next == null
+         * Slow: 1, 2, 3  but  4 as the head of second half
 
-    node_ptr->next = new ListNode(val);
+         * Odd # of nodes: 1->2->3->4->5
+         * Fast: 2, 4 => fast->next != null
+         * Slow: 1, 2 but 4 as the head of a second half
+         */
 
-    return dummy_node.next;
-}
-
-void print(ListNode * head)
-{
-    ListNode * curr = head;
-    while (nullptr != curr)
-    {
-        std::cout << curr->val << "->";
-        curr = curr->next;
-    }
-    std::cout << "nullptr" << std::endl;
-}
-
-class Solution {
-public:
-    ListNode * bisect_list(ListNode *head)
-    {
-        /* Assume the input list has at least two nodes. Hence, we start at the first node! */
-        /* Trick: Slow and fast can start at different nodes just image both of them walk from the
-           dummy node whose next is head.
-        */
-        ListNode *slow = head;
-        ListNode *fast = head->next;
+        /* start from a virtual dummy head! */
+        ListNode* fast = head->next;
+        ListNode* slow = head;
 
         while (nullptr != fast->next && nullptr != fast->next->next)
         {
-            slow = slow->next;
             fast = fast->next->next;
+            slow = slow->next;
         }
 
-        ListNode * right = nullptr;
+        ListNode* rear;
+
         if (nullptr == fast->next)
         {
-            /* Odd number of nodes in total! */
-            right = slow->next;
+            /* Even # of nodes. */
+            rear = slow->next;
             slow->next = nullptr;
-        }
-        else if (nullptr != fast->next && nullptr == fast->next->next)
-        {
-            /* Even number of nodes in total. */
-            right = slow->next->next;
-            slow->next = nullptr;
-        }
-
-
-        return right;
-    }
-
-    bool is_equal(ListNode * first, ListNode * second)
-    {
-        if (nullptr == first || nullptr == second)
-        {
-            return false;
-        }
-
-        while (nullptr != first && nullptr != second)
-        {
-            if (first->val != second->val)
-            {
-                return false;
-            }
-            else
-            {
-                // advance the first and second
-                first = first->next;
-                second = second->next;
-            }
-        }
-
-        if (nullptr != first || nullptr != second)
-        {
-            return false;
         }
         else
         {
-            return true;
+            /* Odd # of nodes. */
+            rear = slow->next;
+            slow->next = nullptr;
+            ListNode* temp = rear->next;
+            rear->next = nullptr;
+            rear = temp;
         }
+
+        return rear;
     }
 
-
-    ListNode * reverse_list(ListNode * head)
+    ListNode* reverse_list(ListNode* head)
     {
-        /* Empty list */
         if (nullptr == head) return nullptr;
 
-        ListNode *prev = nullptr;
-        ListNode *curr = head;
+        ListNode* prev = nullptr;
+        ListNode* curr = head;
+        ListNode* next;
 
         while (nullptr != curr)
         {
-            ListNode * next = curr->next;
+            next = curr->next;
             curr->next = prev;
+
+            /* update prev, curr, and next */
             prev = curr;
             curr = next;
         }
 
+        /* curr == null but pev is the new head */
         return prev;
     }
 
-    bool isPalindrome(ListNode* head) {
-        if (nullptr == head) return false;
-
-        if (nullptr == head->next) return true;
-
-        /* The number of nodes in the list is in the range [1, 105] */
-        ListNode * right = bisect_list(head);
-
-        return is_equal(head, reverse_list(right));
-    }
-
-    bool isPalindrome_stack(ListNode *head)
+    bool is_equal(ListNode* front, ListNode* rear)
     {
-        if (nullptr == head) return false;
-
-        if (nullptr == head->next) return true;
-
-        stack<ListNode*> stack_nodes;
-        ListNode *curr = head;
-        while (nullptr != curr)
+        /* Note that fron list may have one more nodes than that of the rear list */
+        while (nullptr != rear)
         {
-            stack_nodes.push(curr);
-            curr = curr->next;
-        }
+            if (rear->val != front->val) return false;
 
-        curr = head;
-        while (nullptr != curr)
-        {
-            const auto top_node =  stack_nodes.top();
-            stack_nodes.pop();
-            if (top_node->val != curr->val)
-            {
-                return false;
-            }
-
-            curr = curr->next;
+            // update front and rear
+            rear = rear->next;
+            front = front->next;
         }
 
         return true;
+
+    }
+
+    bool isPalindrome(ListNode* head) {
+        /* step 1: biscect the given list.
+         * work a few example to handle even-length and odd-length list.
+         */
+        ListNode* rear = bisect_list(head);
+
+        /* step 2: reverse the rear half. */
+        rear = reverse_list(rear);
+
+        /* step 3: compare the front half and rear half. */
+
+        return is_equal(head, rear);
     }
 };
 
-
-int main()
+int
+main(int argc, char** argv)
 {
-    ListNode head =  ListNode(1);
-    append(&head, 0);
-    append(&head, 1);
-    print(&head);
-
-    Solution sol;
-    sol.isPalindrome(&head);
+    return 0;
 }
+

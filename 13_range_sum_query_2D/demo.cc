@@ -13,12 +13,12 @@ using namespace std;
     0 <= col1 <= col2 < n
     At most 104 calls will be made to sumRegion.
 */
-class NumMatrix {
+class NumMatrixOne {
 private:
     /* vector<vector<int>> sums; */
     vector<vector<int>> pre_sums;
 public:
-    NumMatrix(vector<vector<int>>& matrix) {
+    NumMatrixOne(vector<vector<int>>& matrix) {
         int rows = matrix.size();
         int cols = matrix[0].size();
         /* sums.resize(rows, vector<int>(cols, 0)); */
@@ -58,10 +58,59 @@ public:
     }
 };
 
+
+class NumMatrix {
+public:
+    NumMatrix(vector<vector<int>>& matrix) {
+        int rows = matrix.size();
+        int cols = matrix[0].size();
+
+        /* We append zeros the matrix to the topmost row and leftmost column, respectively. */
+        /* By doing so, we handle the out of boundary problem in a unified way. */
+        /* Note the off by one index between original and augmeted matricies. */
+        presum.resize(rows + 1, std::vector<long int>(cols + 1, 0)); // zero!
+
+        /**
+         * presum[i][j] is the sum of the rectangle bounded by (0, 0) and (i, j) in the augmented
+         * matrix
+         * Inductive Reasoning: presum[i][j] = presum[i - 1][j] + sum for elements from 0 to j in
+         ith row with i and j ranging from 1 to rows and cols inclusively and respectively.
+         */
+        long int row_sum;
+        for (size_t r = 0; r < rows; ++r)
+        {
+            row_sum = 0;
+            for (size_t c = 0; c < cols; ++c)
+            {
+                row_sum += matrix[r][c];
+                presum[r + 1][c + 1] = presum[r][c + 1] + row_sum;
+            }
+        }
+    }
+
+    /**
+     * Note that this range sum query will be called frequently. Hence, we are better off
+     */
+    int sumRegion(int row1, int col1, int row2, int col2)
+    {
+        /**
+         * In the augmented matrix, sum = presum[row2][col2] - presum[row1 - 1][col2]
+         * - presum[row2][col1 - 1] + presum[row1 - 1][col1 - 1]
+         * Since the given index is in the orignal matrix, hence we need to increment by 1
+         */
+
+        return presum[row2 + 1][ col2 + 1] - presum[row1][col2 + 1] - presum[row2 + 1][col1]
+                + presum[row1][col1];
+    }
+
+private:
+    std::vector<std::vector<long int>> presum;
+};
+
 /**
  * Your NumMatrix object will be instantiated and called as such:
  * NumMatrix* obj = new NumMatrix(matrix);
- * int param_1 = obj->sumRegion(row1,col1,row2,col2);
+ * int param_1 = obj->sumRegion(row1,col1,row2,csumRegionol2);
  */
 int main()
 {

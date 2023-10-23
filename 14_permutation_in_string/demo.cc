@@ -3,6 +3,7 @@
 #include <vector>
 using namespace std;
 
+/* https://leetcode.com/problems/permutation-in-string/submissions/ */
 class Solution {
 public:
     bool is_all_zero(const vector<int> nums)
@@ -94,11 +95,82 @@ public:
     }
 };
 
+class SolutionTwo
+{
+public:
+    bool is_all_zero(const std::vector<int>& letter2cnt)
+    {
+        for (const auto& num : letter2cnt)
+        {
+            if (0 != num)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    bool checkInclusion(string s1, string s2) {
+        /* both s1 and s2 are ensured to non-empty! */
+        /* corner case */
+        if (s1.size() > s2.size())
+        {
+            return false;
+        }
+
+        /**
+         * Order does not count which leads us to encode s1 into a hashmap from letter to
+         * number of occurrences.
+         * Given all the keys of hashmap comes from 26 lowercase English letters, we use std::vector
+         * to emulate the hashmap.
+         */
+        std::vector<int> letter2cnt(26, 0);
+        for (const auto ch : s1)
+        {
+            ++letter2cnt[ch - 'a'];
+        }
+        /**
+         * At this point, letter2cnt becomes a target state.
+         * The problem reduces to search for a window which can zero the whole letter2cnt.
+         */
+
+        /* Initialize the state */
+        for(size_t i = 0; i < s1.size(); ++i)
+        {
+            --letter2cnt[s2[i] - 'a'];
+        }
+
+        if (is_all_zero(letter2cnt))
+        {
+            return true;
+        }
+
+        /* why <= s2.size() - s1.size() ?
+         * think in semi-open interval [i, j) j - i == length of array.
+         * size() - (size() - s1.size()) == s1.size()*/
+        for (size_t i = 1; i <= s2.size() - s1.size(); ++i)
+        {
+            /* update the state */
+            ++letter2cnt[s2[i - 1] - 'a'];
+            --letter2cnt[s2[i + s1.size() - 1] - 'a'];
+
+            /* check the state */
+            if (is_all_zero(letter2cnt))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+};
+
 int main()
 {
-    Solution sol;
-    /* string s1 = "ab", s2 = "eidbaooo"; */
-    string s1 = "ab", s2 = "eidboaoo";
+    SolutionTwo sol;
+    string s1 = "ab", s2 = "eidbaooo";
+    /* string s1 = "ab", s2 = "eidboaoo"; */
     cout << (true == sol.checkInclusion(s1, s2) ? "true" : "false") << endl;
 
     return 0;

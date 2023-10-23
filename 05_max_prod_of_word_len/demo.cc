@@ -4,6 +4,8 @@
 #include <unordered_set>
 using namespace std;
 
+/* https://leetcode.com/problems/maximum-product-of-word-lengths/ */
+
 class Solution {
 public:
     bool is_no_common_char(const string &s1, const string &s2)
@@ -203,13 +205,47 @@ public:
 
         return max_prod;
     }
+
+    int maxProduct(vector<string>  words)
+    {
+        /* Encode each word into a int32 since each word consist of lowercase letters. */
+        /* sign bit, MSB, ..., LSB */
+        /* LSB stands for 'a'*/
+        vector<int> word_letters(words.size(), 0);
+
+        for (size_t i = 0; i < words.size(); ++i)
+        {
+            for (const auto& letter : words[i])
+            {
+                word_letters[i] |= (1 << (letter - 'a'));
+            }
+        }
+
+        /* If no two words has no common chars, then return 0. */
+        int max_prod = 0;
+
+        for (size_t i = 0; i < words.size(); ++i)
+        {
+            /* do not look back */
+            for (size_t j = i + 1; j < words.size(); ++j)
+            {
+                if ((word_letters[i] & word_letters[j]) == 0)
+                {
+                max_prod = std::max<int>(max_prod, words[i].size() * words[j].size());
+                }
+            }
+        }
+
+        return max_prod;
+    }
 };
 
 int main()
 {
     Solution sol;
     vector<string> words = {"abcw","baz","foo","bar","xtfn","abcdef"};
-    int max_prod = sol.maxProduct_bitmask(words);
+    /* int max_prod = sol.maxProduct_bitmask(words); */
+    int max_prod = sol.maxProduct(words);
     cout << "max_prod: " << max_prod << endl;
 
     int a = 1;

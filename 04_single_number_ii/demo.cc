@@ -42,7 +42,7 @@ public:
     {
         /* How to select the ith bit of int?
            (int >> i) & 1 for i = 0, 1, ...  (we can terminate until int >> i == 0)
-           or int & (1 << 1)
+           or bool(int & (1 << 1))
             Add the bits of the same place value for all numbers. Store the respective sum in sums.
             sums[0] = sum of bits at 0th bit
             If the sums[0] divide 3, then the 1's come from numbers which appears three times.
@@ -99,13 +99,47 @@ public:
         return low_bit;
     }
 
+
+    int singleNumber_(vector<int> nums)
+    {
+        /* bit_sums[i] indicate the ith bit to the left of int */
+        /* 0th bit is the MSB while 31th bit is the LSB */
+        vector<int> bit_sums(32, 0);
+
+        for (const auto& num : nums)
+        {
+            for (size_t i = 0; i < 32; ++i)
+            {
+                /* Note that the result of bitwise is still an int! */
+                bit_sums[i] += (num & (1 << (31 - i))) ? 1 : 0;
+            }
+        }
+
+        /* std::cout << "bit_sums: \n"; */
+        /* for (const auto& s : bit_sums) */
+        /* { */
+        /*     std::cout << s << ","; */
+        /* } */
+        /**/
+        /* std::cout << std::endl; */
+
+        int result = 0;
+
+        for (size_t i = 0; i < 32; ++i)
+        {
+            result = result | ((bit_sums[i] % 3) << (31 - i));
+        }
+
+        return result;
+    }
+
 };
 
 int main()
 {
     Solution sol;
     vector<int> nums = {2, 2, 3, 2};
-    int sn = sol.singleNumber_sum(nums);
+    int sn = sol.singleNumber_(nums);
     cout << "single number is " << sn << std::endl;
 
     return 0;

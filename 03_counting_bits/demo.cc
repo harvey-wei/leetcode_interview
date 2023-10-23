@@ -6,6 +6,47 @@ using namespace std;
 
 class Solution {
 public:
+    vector<int> count_bits_naive_(int n)
+    {
+        vector<int> one_cnt(n + 1, 0);
+
+        for (size_t i = 0; i <= n; ++i)
+        {
+            /* shift the checker 1 or shift the checkee i ?*/
+            /* shift the checker 1 needs to know total nubmer of bits i*/
+            /* shift i until i == 0*/
+
+            size_t num = i;
+            while (num)
+            {
+                one_cnt[i] += num & 1;
+                num >>= 1;
+            }
+        }
+
+        return one_cnt;
+    }
+
+    vector<int> count_bits_(int n)
+    {
+        vector<int> one_cnt(n + 1, 0);
+
+        /**
+         * 1100 & (1100 - 1) = 1000, 1101 & (1101 -1) - 1100
+         * key insight: i & (i - 1) set the right-most 1 to 0 if i is unsigned int or positive.
+         * one_cnt[i] = 1 + one_cnt[i & (i - 1)] with i = 1, 2, 3, 4..., n;
+         * i & (i - 1) >= 0 if i is unsigned int or positive and i >= 1;
+         * one_cnt[0] = 0
+         */
+
+        for (size_t i = 1; i <= n; ++i)
+        {
+            one_cnt[i] = 1 + one_cnt[i & (i - 1)];
+        }
+
+        return one_cnt;
+    }
+
     vector<int> countBits_naive(int n)
     {
         assert(n >= 0); // leading bit is zero.
@@ -52,7 +93,7 @@ public:
     vector<int> countBits_recuisve(int n)
     {
         std::vector<int> one_cnt(n + 1, 0);
-        /*Key insight: one_cnt[i] = one_cnt[i & (i - 1)] + 1for i = 1, 2, 3, .., n */
+        /*Key insight: one_cnt[i] = one_cnt[i & (i - 1)] + 1 for i = 1, 2, 3, .., n */
 
         for (int i = 1; i <= n; ++i)
         {

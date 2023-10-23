@@ -101,15 +101,64 @@ public:
 };
 
 
+class SolutionTwo
+{
+    public:
+        int subarraySum(vector<int>& nums, int k)
+        {
+            /* Since integer can be negative, we should use prefix sum */
+            /* Sum is a fixed number. a + b = s. When fixing a, we could check whether b exists */
+            int count = 0;
+
+            /* We prefix the nums with a zero implicitly! */
+            std::vector<long int> presum(nums.size() + 1, 0);
+            /* for (size_t i = 0; i < nums.size(); ++i) */
+            /* { */
+            /*     presum[i + 1] = presum[i] + nums[i]; */
+            /* } */
+
+            /* Store the scanned prefix sum and its number of occurences. */
+            std::unordered_map<long int, int> sum2cnt;
+            sum2cnt[0] = 1;
+
+            /* presum[i] - presum[j] = sum of A[j + 1, i] in the new array. */
+            for (size_t i = 1; i < presum.size(); ++i)
+            {
+                presum[i] = presum[i - 1] + nums[i - 1];
+
+                /* Check if another adddend was visited */
+                if (sum2cnt.end() != sum2cnt.find(presum[i] - k))
+                {
+                    count += sum2cnt[presum[i] - k];
+                }
+
+
+                if (sum2cnt.end() == sum2cnt.find(presum[i]))
+                {
+                    sum2cnt[presum[i]] = 1;
+                }
+                else
+                {
+                    sum2cnt[presum[i]] += 1;
+                }
+            }
+
+            /* The above two loops can be contracted into one loop! */
+
+            return count;
+        }
+};
+
+
 int main()
 {
-    Solution sol;
+    SolutionTwo sol;
     vector<int> nums = {1,1,1};
     int k = 2;
     /* vector<int> nums = {1,2,3}; */
     /* int k = 3; */
     /* int count = sol.subarraySum(nums, k); */
-    int count = sol.subarraySum_better(nums, k);
+    int count = sol.subarraySum(nums, k);
 
     cout << "count: " << count << endl;
 
