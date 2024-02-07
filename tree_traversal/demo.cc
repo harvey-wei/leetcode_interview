@@ -175,7 +175,6 @@ public:
             }
         }
 
-
         return result;
     }
 
@@ -184,11 +183,15 @@ public:
     */
     void preorderTraversalHelper(TreeNode* root, vector<int>& result)
     {
+        /* base case: hit the nullptr. */
         if (nullptr == root) return;
 
         result.push_back(std::move(root->val));
         preorderTraversalHelper(root->left, result);
         preorderTraversalHelper(root->right, result);
+
+        /* Left and right subtrees are exhuasted! */
+        return;
     }
 
     vector<int> preorderTraversal_recur(TreeNode* root) {
