@@ -87,9 +87,9 @@ void print_all_binary(int digit_cnt, std::string& curr_binary)
         for (int i = 0; i < 2; ++i)
         {
             char digit = '0' + i;
-            curr_binary.push_back(digit);
-            print_all_binary(digit_cnt - 1, curr_binary);
-            curr_binary.pop_back();
+            curr_binary.push_back(digit);  // choose
+            print_all_binary(digit_cnt - 1, curr_binary); // explore
+            curr_binary.pop_back(); // unchoose
         }
     }
 

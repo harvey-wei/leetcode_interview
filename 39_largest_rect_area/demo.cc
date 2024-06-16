@@ -1,57 +1,73 @@
 #include <iostream>
 #include <vector>
 #include <stack>
+#include <climits>
+
 using namespace std;
 
 class Solution {
 public:
-    /*
-       Time: O(N)
-       Space: O(N)
-    */
     int largestRectangleArea(vector<int>& heights)
     {
-        /* For each bin in the histogram, we need find the ** most recent ** bins both in the past
-           and in the future which are strictly less than it.
-           Most recent -> stack
-           Bi-directinal strictly less than -> ascending order (non-descending order stack)
-           The * immediate neighor * in the stack is the most recent desirable one in the past.
-           The current in the array might be the most recent desirable one in the future.
+        /**
+         * For each bin, we want to define the largest rect whose height == that bin.
+         * Hence, we wan to locate farthest bin to both left and right of that bin >= that bin.
+         * ** Next smaller bin ** -> mono-increasing stack
+         * You should prove some property using proof-by-contradiction.
+         * Given that we scan the heights array from left to right.
+         * We could find rect of height as the most recently visited bin.
+         * Once the current visited bin strictly < top, the unvisited bins are rulled out for top
+         * bin as heigh.
+         */
+        /* int max_area = INT_MIN; */
+        int max_area = -1;  // area >= 0
+        std::stack<int> idx_stack;
 
-           Key: pop out the top element of the stack if the current < the top. (repeatedly)
-        */
-        int max_area = 0;
 
-        // Elements in mono_stack are in ascending order and stores the index of element in the
-        // original array heights.
-        stack<int> mono_stack;
-        mono_stack.push(-1);  // a dummy starting bin index and indicates stack is empty.
-
-        // Each element is pushed to and popped out only once.
         for (int i = 0; i < heights.size(); ++i)
         {
-            while (mono_stack.top() != -1 && heights[i] <  heights[mono_stack.top()])
+            while (!idx_stack.empty() && (heights[i] < heights[idx_stack.top()]))
             {
-                int h = heights[mono_stack.top()];
-                mono_stack.pop();
-                max_area = max<int>(max_area, h * (i - mono_stack.top() - 1));
+                /**
+                 * The largest rect of height heights[idx_stack.top()] is
+                 * [second to top + 1, i - 1] >> top bin
+                 * Base on the mono-increasing.
+                 * All bins > top to left of top are discared.
+                 * heights[i-1] must > heights[top]. otherwise top is already discared.
+                 */
+                int h = heights[idx_stack.top()];
+                idx_stack.pop();
+
+                // [idx_stack.top + 1, i - 1] >= h
+                // prove by contradiction based on mono-non-descending fact.
+                // idx = idx_stack.top + 1 if not empty
+                int idx = idx_stack.empty() ? 0 : idx_stack.top() + 1;
+                max_area = max(max_area, h * (i - idx));
             }
 
-            mono_stack.push(std::move(i));
+            // idx_stack is empty or heights[i] >= heights[top]
+            idx_stack.push(i);
         }
 
-        // the mono_stack might not be empty if there are no more bins < top even all Elements
-        // in the heights are visited.
-        while (mono_stack.top() != -1)
+        while (!idx_stack.empty())
         {
-            int h = heights[mono_stack.top()];
-            mono_stack.pop();
-            max_area = max<int>(max_area, h * (heights.size() - mono_stack.top() - 1));
+            /* That means no bin are < them. */
+            /* [idx_stack.top, heights.size()) are largest rect of height top*/
+            int h = heights[idx_stack.top()];
+            idx_stack.pop();
+            // You have to pop out the current to know the smallest left boundary
+
+            /* [curr_top + 1, size()) */
+            // idx = curr_top + 1
+            int idx = idx_stack.empty() ? 0 : idx_stack.top() + 1;
+
+            max_area = max(max_area, h * (int(heights.size()) - idx));
         }
 
-        return max_area;
+        return  max_area;
     }
 };
+
 
 int main()
 {

@@ -12,60 +12,57 @@ public:
 };
 
 
+// You can image child as left subtree, left as right substree
+// prev is parent
+// The goal is to do pre-order traversal
+// Data abstraction and Find repetitive pattern.
+// We need a dummy head to return the result
+// We also need a prev pointer track the tail of the current result.
+// We also need a curr poiter to tack the start of the remaining linked list.
+// Node's address act as ID.
+
 class Solution {
 public:
-    Node* flatten(Node* head) {
-        stack<Node*> stack_nodes;
-        Node* curr = head;
+    Node* flatten(Node* head)
+    {
+        if (nullptr == head) return head;
+        Node dummy = Node();
+        Node* prev;
+        Node* curr;
+        prev = &dummy;
 
-        while (nullptr != curr)
+        stack<Node*> nodes_stack;
+        nodes_stack.push(head);
+
+        while (!nodes_stack.empty())
         {
-            if (nullptr != curr->child && nullptr != curr->next)
+            /* Pop and push next and child. */
+            curr = nodes_stack.top();
+            nodes_stack.pop();
+
+            prev->next = curr;
+            curr->prev = prev;
+
+            if (nullptr != curr->next)
             {
-                stack_nodes.push(std::move(curr->next));
-                curr->next = curr->child;
+                nodes_stack.push(curr->next);
+            }
+
+            if (nullptr != curr->child)
+            {
+                nodes_stack.push(curr->child);
+
+                // set child of curr to null
                 curr->child = nullptr;
-                curr->next->prev = curr;
-                // update curr
-                curr = curr->next;
             }
-            else if (nullptr != curr->next)
-            {
-                // update curr
-                curr = curr->next;
-            }
-            else if (nullptr != curr->child)
-            {
-                curr->next = curr->child;
-                curr->child = nullptr;
-                curr->next->prev = curr;
 
-                // update curr
-                curr = curr->next;
-            }
-            else
-            {
-                /* both child and next are nullptr. */
-                if (!stack_nodes.empty())
-                {
-                    Node * top = stack_nodes.top();
-                    stack_nodes.pop();
-                    curr->next = top;
-                    top->prev = curr;
-
-                    // update curr
-                    curr = top;
-
-                }
-                else
-                {
-                    curr = nullptr;
-                }
-            }
+            // update prev
+            prev = curr;
         }
+        // Detach the dummy head from the result.
+        dummy.next->prev = nullptr;
 
-        /* Might need to rectify. */
-        return head;
+        return dummy.next;
     }
 
     /* TODO: The problem can be reduced to pre-order tree traversal.

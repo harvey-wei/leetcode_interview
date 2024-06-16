@@ -18,17 +18,24 @@ class Solution
         int partition(vector<int>& nums, int left, int right)
         {
             /* nums[left...right] is of interest. */
-
             /* pivot_idx in [left, right]*/
+            /* # of possible index = right - left + 1 */
+            /* start = left */
             int pivot_idx = rand() % (right - left + 1) + left;
+
+			/* put pivot nubmer to the end by swapping*/
+			/* Now the pivot value is nums[right]*/
             swap_num(nums, pivot_idx, right);
 
             int low = left - 1;
+
+			/* */
             /* Loop invariant: nums[0...low] < pivot_val */
             for (int i = left; i <= right; ++i)
             {
                 if (nums[i] < nums[right])
                 {
+					/* Find one number < pivot_val*/
                     ++low;
                     swap_num(nums, i, low);
                 }
@@ -41,9 +48,14 @@ class Solution
             return low;
         }
 
-        void quick_sort_helper(vector<int>& nums, int left, int right)
+        void quick_sort_helper_(vector<int>& nums, int left, int right)
         {
-            /* recusion */
+            /* recursion */
+            /**
+             * Since there is no extra operation after the final recursion,
+             * this recursion is a tail-recusive call.
+             * Optimized version: eliminate the tail-recursion.
+             */
             if (left < right)
             {
                 int pivot_idx = partition(nums, left, right);
@@ -53,6 +65,23 @@ class Solution
             else
             {
                 /* base case */
+            }
+        }
+
+        void quick_sort_helper(vector<int>& nums, int left, int right)
+        {
+            /* recursion */
+            /**
+             * Since there is no extra operation after the final recursion,
+             * this recursion is a tail-recusive call.
+             * Optimized version: eliminate the tail-recursion.
+             */
+            while (left < right)
+            {
+                int pivot_idx = partition(nums, left, right);
+                quick_sort_helper(nums, left, pivot_idx - 1);
+                left = pivot_idx + 1;
+                /* quick_sort_helper(nums, pivot_idx + 1, right); */
             }
         }
 

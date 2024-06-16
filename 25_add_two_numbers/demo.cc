@@ -6,15 +6,15 @@ struct ListNode {
     ListNode(int x, ListNode *next) : val(x), next(next) {}
 };
 
+// https://leetcode.com/problems/add-two-numbers-ii/
 class Solution {
 public:
     ListNode* reverse_list(ListNode* head)
     {
-        if (nullptr == head)
-        {
-            return nullptr;
-        }
+        if (nullptr == head) return head;
 
+        /* Point the curr->next to prev*/
+        /* For the head, its prev is null.*/
         ListNode* prev = nullptr;
         ListNode* curr = head;
         ListNode* next;
@@ -29,49 +29,76 @@ public:
             curr = next;
         }
 
-        /* At this point, curr is empty tail node and prev is the new head. */
+        // curr == nullptr. prev is new head
         return prev;
+
     }
 
-    ListNode* addTwoNumbers(ListNode* l1, ListNode* l2) {
-        /* List is guaranteed to be non-empty. */
+    ListNode* addTwoNumbers(ListNode* l1, ListNode* l2)
+    {
+        ListNode dummy_head = ListNode(0, nullptr);
+        ListNode* curr = &dummy_head;
+
         l1 = reverse_list(l1);
         l2 = reverse_list(l2);
 
-        ListNode* ptr_l1 = l1;
-        ListNode* ptr_l2 = l2;
-
-        ListNode dummy = ListNode();
-        ListNode* ptr_sum = &dummy;
-
-        int curr_sum = 0;
+        ListNode* l1_ptr = l1;
+        ListNode* l2_ptr = l2;
+        int sum = 0;
         int carry = 0;
+        ListNode* curr_sum_node;
 
-        while (nullptr != ptr_l1 || nullptr != ptr_l2)
+        while (nullptr != l1_ptr && nullptr != l2_ptr)
         {
-            curr_sum = ((nullptr != ptr_l1) ? ptr_l1->val : 0) +
-                    ((nullptr != ptr_l2) ? ptr_l2->val : 0) + carry;
+            sum = l1_ptr->val + l2_ptr->val + carry;
+            carry = sum / 10;
+            sum -= 10 * carry;
 
-            /* update curr_sum and carry */
-            carry = curr_sum / 10;
-            curr_sum = curr_sum % 10;
+            curr_sum_node = new ListNode(sum);
+            curr->next = curr_sum_node;
 
-            ptr_sum->next = new ListNode(curr_sum);
+            // Advance l1_ptr and l2_ptr
+            l1_ptr = l1_ptr->next;
+            l2_ptr = l2_ptr->next;
 
-            /* update ptr_l1 , ptr_l2, and ptr_sum */
-            if (nullptr != ptr_l1) ptr_l1 = ptr_l1->next;
-            if (nullptr != ptr_l2) ptr_l2 = ptr_l2->next;
-
-            ptr_sum = ptr_sum->next;
+            curr = curr->next;
         }
 
-        /* Deal with the last non-zero carry! */
-        if (carry > 0)
+        while (nullptr != l1_ptr)
         {
-            ptr_sum->next = new ListNode(carry);
+            sum = l1_ptr->val + carry;
+            carry = sum / 10;
+            sum -= 10 * carry;
+
+            curr_sum_node = new ListNode(sum);
+            curr->next = curr_sum_node;
+
+            l1_ptr = l1_ptr->next;
+            curr = curr->next;
         }
 
-        return reverse_list(dummy.next);
+        while (nullptr != l2_ptr)
+        {
+            sum = l2_ptr->val + carry;
+            carry = sum / 10;
+            sum -= 10 * carry;
+
+            curr_sum_node = new ListNode(sum);
+            curr->next = curr_sum_node;
+
+            l2_ptr = l2_ptr->next;
+            curr = curr->next;
+        }
+
+        // Trailing carry
+        if (0 != carry)
+        {
+            curr_sum_node = new ListNode(carry);
+            curr->next = curr_sum_node;
+        }
+
+        ListNode* result = dummy_head.next;
+        return reverse_list(result);
     }
 };
 

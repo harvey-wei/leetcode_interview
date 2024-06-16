@@ -1,95 +1,36 @@
-#include <iostream>
-#include <queue>
-#include <list>
-#include <deque>
+#include <queue> // front is the oldest one
+
 using namespace std;
 
-class RecentCounter {
-private:
-    deque<int> time_deque;
-    int request_cnt;
-
-public:
-    RecentCounter() {
-        request_cnt = 0;
-    }
-
-    int ping(int t)
-    {
-        time_deque.push_back(t);
-        ++request_cnt;
-
-        int start_time = t - 3000;
-        /* pop out all timestamps < start_time
-           t == t no need to check the empty
-        */
-        while (time_deque.front() < start_time)
-        {
-            --request_cnt;
-            time_deque.pop_front();
-        }
-
-        return request_cnt;
-    }
-};
-
-class RecentCounter_list
+class RecentCounter
 {
-private:
-    list<int> time_list;
-    int request_cnt;
 public:
-    RecentCounter_list() {
-        request_cnt = 0;
+    RecentCounter()
+    {
     }
 
     int ping(int t)
     {
-        time_list.push_back(t);
-        ++request_cnt;
+        /* It is guaranteed that every call to pint use a strictly larger value of ti than
+         * the previous call.
+         * That is, front is always smaller than back in the queue.
+         */
+        int l = t - 3000;
 
-        int start_time = t - 3000;
-        /* pop out all timestamps < start_time
-           t == t no need to check the empty
-        */
-        while (time_list.front() < start_time)
+        while (!t_q.empty() && t_q.front() < l)
         {
-            --request_cnt;
-            time_list.pop_front();
+            t_q.pop();
         }
 
-        return request_cnt;
-    }
-};
+        t_q.push(t);
 
-/* class RecentCounter { */
-/* private: */
-/*     queue<int> time_queue; */
-/*     int request_cnt; */
-/* public: */
-/*     RecentCounter() { */
-/*         request_cnt = 0; */
-/*     } */
-/**/
-/*     int ping(int t) */
-/*     { */
-/*         time_queue.push(t); */
-/*         ++request_cnt; */
-/**/
-/*         int start_time = t - 3000; */
-/*         // pop out all timestamps < start_time */
-/*            t == t no need to check the empty */
-/*         */
-/*         while (time_queue.front() < start_time) */
-/*         { */
-/*             --request_cnt; */
-/*             time_queue.pop(); */
-/*         } */
-/**/
-/*         return request_cnt; */
-/*     } */
-/**/
-/* }; */
+        return t_q.size();
+    }
+
+private:
+    queue<int> t_q;
+
+};
 
 /**
  * Your RecentCounter object will be instantiated and called as such:

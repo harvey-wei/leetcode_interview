@@ -1,8 +1,13 @@
 #include <queue>
-#include <algorithm>
-using namespace std;
 
-struct TreeNode {
+
+using namespace std;
+/**
+ * Definition for a binary tree node.
+ */
+
+struct TreeNode
+{
     int val;
     TreeNode *left;
     TreeNode *right;
@@ -11,51 +16,89 @@ struct TreeNode {
     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
 };
 
-class Solution {
+class Solution
+{
+public:
+    void dfs(TreeNode* curr, int depth, int& max_depth, int& leftmost)
+    {
+        if (nullptr == curr)
+        {
+            /* base case: leaf */
+            return;
+        }
+        else
+        {
+            if (depth > max_depth)
+            {
+                /* Reach a new level. */
+                leftmost = curr->val;
+                max_depth = depth;
+            }
+
+            dfs(curr->left, depth + 1, max_depth, leftmost);
+            dfs(curr->right, depth + 1, max_depth, leftmost);
+        }
+
+    }
+
+    int findBottomLeftValue(TreeNode* root)
+    {
+        int leftmost = 0;
+        int max_depth = -1; // root is level 0
+
+        dfs(root, 0, max_depth, leftmost);
+
+        return leftmost;
+    }
+};
+
+class SolutionIter {
 public:
     int findBottomLeftValue(TreeNode* root)
     {
-        /* Assert: There are at least one node in the given binary tree. */
-        int bottom_left;
-        queue<TreeNode*> q;
-        int curr_cnt = 0;
+        /* root is ensured not to be null. */
+        queue<TreeNode*> node_q;
+        TreeNode* curr = nullptr;
+        node_q.push(root);
+        int curr_cnt = 1;
         int next_cnt = 0;
+        int leftmost = root->val;
 
-        q.push(std::move(root));
-        ++curr_cnt;
-        bottom_left = root->val;
-
-        while (!q.empty())
+        while (!node_q.empty())
         {
-            TreeNode* front = q.front();
-            q.pop();
+            curr = node_q.front();
+            node_q.pop();
             --curr_cnt;
 
-            if (nullptr != front->left)
+            if (nullptr != curr->left)
             {
-                q.push(std::move(front->left));
+                node_q.push(curr->left);
                 ++next_cnt;
             }
 
-            if (nullptr != front->right)
+            if (nullptr != curr->right)
             {
-                q.push(std::move(front->right));
+                node_q.push(curr->right);
                 ++next_cnt;
             }
 
-            /* Check to see if the current level is completely traversed. */
             if (0 == curr_cnt)
             {
+                /**
+                 * Current level are completely popped out.
+                 * The front in queue is the leftmost in the NEXT level.
+                 */
                 curr_cnt = next_cnt;
                 next_cnt = 0;
 
-                if (!q.empty())
+                /* Access front before check empty */
+                if (!node_q.empty())
                 {
-                    bottom_left = q.front()->val;
+                    leftmost = node_q.front()->val;
                 }
             }
         }
 
-        return bottom_left;
+        return leftmost;
     }
 };

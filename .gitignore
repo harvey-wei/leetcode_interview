@@ -53,6 +53,7 @@ compile_commands.json
 CTestTestfile.cmake
 _deps
 _builds
+build/
 
 *.swp
 .*cache

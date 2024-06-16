@@ -147,29 +147,50 @@ private:
             return nullptr;
         size_t n = begin + (end - begin)/2;
         auto i = nodes_.begin();
+		/* iterator = i + idx */
         std::nth_element(i + begin, i + n, i + end, node_cmp(index));
+
+		// Next dimension
         index = (index + 1) % dimensions;
         nodes_[n].left_ = make_tree(begin, n, index);
         nodes_[n].right_ = make_tree(n + 1, end, index);
+
         return &nodes_[n];
     }
 
     void nearest(node* root, const point_type& point, size_t index) {
         if (root == nullptr)
             return;
+
         ++visited_;
+		/* d is the L2-distance */
         double d = root->distance(point);
         if (best_ == nullptr || d < best_dist_) {
             best_dist_ = d;
             best_ = root;
         }
+
         if (best_dist_ == 0)
             return;
+
+		/* We find the correct position for query point by current dimension--index only*/
+		/* dx > 0, go the left subtree  and update best_dist_. */
+		/* dx * dx is the square of distance of query point to the splitting plane root->get(index)*/
         double dx = root->get(index) - point.get(index);
         index = (index + 1) % dimensions;
+
         nearest(dx > 0 ? root->left_ : root->right_, point, index);
+
         if (dx * dx >= best_dist_)
+		{
+			/* The distance to the splitting plane root->get(index) is dx * dx  */
+			/* A ball centered at query point with radius as best_dist_ does not cross the splitting
+			plane*/
+			/* Hence no need to check the other side */
             return;
+		}
+
+		/* We also need the check the other side of the traversed side. */
         nearest(dx > 0 ? root->right_ : root->left_, point, index);
     }
 public:

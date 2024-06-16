@@ -1,6 +1,11 @@
-#include <iostream>
 #include <unordered_map>
+
+
 using namespace std;
+/**
+ * Definition for a binary tree node.
+ */
+
 
 struct TreeNode {
     int val;
@@ -11,62 +16,72 @@ struct TreeNode {
     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
 };
 
+
 class Solution {
 public:
-    /*
-       SRTBOT: A framework to solve a problem recursively.
-       Tree is recursively defined! Hence, the recursive function should have subtree as parameter.
-       S: f(x, parent_cum_sum) = # of paths summing up to targetSum for tree x
-       R: f(x, parent_cum_sum) = f(x.left) + f(x.right) + induced by node x.
-       hash_map: cum_sum to cnt of occurrences.
-       Topo: bottom-up: pre-order
-       Base case:
-       1. f(root, 0) = 0 if root.val = target sum otherwise 0;
-       O: sum of f(leaves) directly
-       Via Pre-order DFS
-    */
-    unordered_map<long int, int> cum_sum2cnt;
-    int path_cnt = 0;
-    void pathSum_helper(TreeNode* root, int& target_sum, long int cum_sum)
+    Solution()
     {
-        /* base case: null node does not contribute to path_sum */
+        path_cnt = 0;
+    }
+    /**
+     *  SRTBOT:
+     *  Subproblem: f(x) = the # of target path in tree rooted at x.
+     *  Relation:  Locally brute force
+     *  f(x) = f(x.left) + f(x.right) + # of target path incuing x
+     *  process x first -> pre-order
+     *  Topological order: pre-order
+     *  Base case: x = nullptr, f(x) = 0
+     *  Original Problem: f(root of tree)
+     *  Time: O(n)
+     *  Image each path from root as a array, path sum is the sum of subarray.
+     *  prefix acc_sum -> diff of acc_sum = sum of path sum = target.
+     */
+    void dfs(TreeNode* root, unordered_map<long int, int>& acc_sum2cnt,  long int acc_sum,
+            const int& target_sum)
+    {
         if (nullptr == root) return;
 
-        cum_sum += root->val;
-        if (target_sum == cum_sum)
+        // choose the root
+        acc_sum += root->val;
+        long int s = acc_sum - target_sum;
+
+        if (acc_sum2cnt.end() != acc_sum2cnt.find(s))
         {
-            ++path_cnt;
+            path_cnt += acc_sum2cnt[s];
         }
 
-        if (cum_sum2cnt.end() != cum_sum2cnt.find(cum_sum - target_sum))
+        // update acc_sum2cnt, choose - explore - un-cho0se
+        if (acc_sum2cnt.end() == acc_sum2cnt.find(acc_sum))
         {
-            path_cnt += cum_sum2cnt[cum_sum - target_sum];
-        }
-
-        if (cum_sum2cnt.end() != cum_sum2cnt.find(cum_sum))
-        {
-            cum_sum2cnt[cum_sum] += 1;
+            acc_sum2cnt[acc_sum] = 1;
         }
         else
         {
-            cum_sum2cnt[cum_sum] = 1;
+            ++acc_sum2cnt[acc_sum];
         }
 
-        pathSum_helper(root->left, target_sum, cum_sum);
-        pathSum_helper(root->right, target_sum, cum_sum);
+        // pass acc_sum by value explore
+        // note that both acc_sum and acc_sum2cnt are state.
+        // They need to follow choose explore unchoose
+        dfs(root->left, acc_sum2cnt, acc_sum, target_sum);
+        dfs(root->right, acc_sum2cnt, acc_sum, target_sum);
 
-        /* Don't forget to unchoose! */
-        --cum_sum2cnt[cum_sum];
+        // unchoose to back-track to the calling root.
+        --acc_sum2cnt[acc_sum];
     }
 
     int pathSum(TreeNode* root, int targetSum)
     {
-        pathSum_helper(root, targetSum, 0);
-        return path_cnt;
-    }
-};
+        unordered_map<long int, int> acc_sum2cnt;
+        // a dummy root with a value of 0.
+        acc_sum2cnt[0] = 1; // Don't forget the path from root;
 
-int main()
-{
-    return 0;
-}
+        dfs(root, acc_sum2cnt, 0, targetSum);
+
+        return path_cnt;
+
+    }
+
+private:
+    int path_cnt;
+};

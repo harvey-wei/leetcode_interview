@@ -1,37 +1,30 @@
-#include <iostream>
+#include <string>
 #include <vector>
+
 using namespace std;
 
-class Solution {
+class Solution
+{
 public:
     bool isAnagram(string s, string t)
     {
-        if ((s == t) || (s.size() != t.size())) return false;
+        if (s.size() != t.size()) return false;
 
-        /* s and t consist of lowercase English letters. */
-        int lc_num = 26;
-        vector<int>  lc2cnt(lc_num, 0);
+        /* Both s and t are comprised of lowercase. */
+        /* Permutation is denoted as a map fromn letter2cnt. */
+        std::vector<int> letter2cnt(26, 0);
 
         for (int i = 0; i < s.size(); ++i)
         {
-            lc2cnt[s[i] - 'a'] += 1;
+            letter2cnt[s[i] - 'a'] += 1;
+            letter2cnt[t[i] - 'a'] -= 1;
         }
 
-        for (int i = 0; i < t.size(); ++i)
+        for (const auto& cnt : letter2cnt)
         {
-            /* New char in t or more of the chars from s exists in t.
-               You have to make sure that s and t are of the same length.
-            */
-            if (0 == lc2cnt[t[i] - 'a']) return false;
-
-            lc2cnt[t[i] - 'a'] -= 1;
+            if (0 != cnt) return false;
         }
 
         return true;
     }
 };
-
-int main()
-{
-    return 0;
-}

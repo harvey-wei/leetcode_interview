@@ -1,58 +1,34 @@
-#include <iostream>
-#include <queue>  // front means oldest while back means newest
-#include <vector>
+#include <queue> // front is oldest.
+
 using namespace std;
-
 class MovingAverage {
-private:
-    queue<int> q;
-    long int s;
-    int win_size;
-public:
-    MovingAverage(int size) {
-        win_size = size;
-        s = 0;
-    }
-
-    double next(int val)
-    {
-        /* double avg = 0.0; */
-        /* if (win_size == q.size()) */
-        /* { */
-        /*     int front = q.front(); */
-        /*     q.pop(); */
-        /*     q.push(val); */
-        /*     s = s - front + val; */
-        /**/
-        /*     avg = (double) (s) / (double) (q.size()); */
-        /* } */
-        /* else */
-        /* { */
-        /*     s += val; */
-        /*     q.push(val); */
-        /*     avg = (double) (s) / (double) (q.size()); */
-        /* } */
-
-        /* optimze after passing all test cases.
-           Don't do early non-asymptotic optimization!
-        */
-
-        double avg = 0.0;
-        s += val;
-
-        if (win_size == q.size())
+    public:
+        MovingAverage(int size)
         {
-            int front = q.front();
-            s -= front;
-            q.pop();
+            this->size = size;
+            acc_sum = 0;
         }
 
-        q.push(val);
+        double next(int val)
+        {
+            if (size == q.size())
+            {
+                // remove th oldest
+                acc_sum -= q.front();
+                q.pop();
+            }
 
-        avg = (double) (s) / (double) (q.size());
+            // push val
+            acc_sum += val;
+            q.push(val);
 
-        return avg;
-    }
+            return static_cast<double>(acc_sum) / static_cast<double>(q.size());
+
+        }
+    private:
+        int size;
+        queue<int> q;
+        int acc_sum;
 };
 
 /**
@@ -60,8 +36,3 @@ public:
  * MovingAverage* obj = new MovingAverage(size);
  * double param_1 = obj->next(val);
  */
-
-int main()
-{
-    return 0;
-}

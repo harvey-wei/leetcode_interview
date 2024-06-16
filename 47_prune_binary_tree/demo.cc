@@ -8,58 +8,39 @@
      TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
  };
 
-class Solution_ {
+// https://leetcode.com/problems/binary-tree-level-order-traversal/editorial/
+class Solution {
 public:
-    TreeNode* pruneTree(TreeNode* root) {
+    TreeNode* pruneTree(TreeNode* root)
+    {
+        /**
+         * One tree can be delete if and only if its root == 0 and its left and right subtree are
+         * deleted.
+         * Hence, we need to check left and right, and then current node. -> post order
+         * bottom to up , left to right
+         * nullptr can be viewes as deleted.
+         * This recusive funtion return the root which might be set null.
+         */
+
         if (nullptr == root)
         {
             return nullptr;
         }
 
-        /* Root can be removed if and only if its left and right subtree are nullptr. */
-        /* post-order traversal. check left and check right and then check the current! */
+        /* post-order traversal */
         root->left = pruneTree(root->left);
         root->right = pruneTree(root->right);
 
         if (0 == root->val && nullptr == root->left && nullptr == root->right)
         {
             delete root;
-            root = nullptr;
+
+            return nullptr;
         }
 
-        return  root;
-
+        return root;
     }
 };
-
-class Solution
-{
-    public:
-        /* return the new root value after deciding whether to pruning the tree. */
-        TreeNode* pruneTree(TreeNode* root)
-        {
-            if (nullptr == root)
-            {
-                /* base case 1*/
-                return nullptr;
-            }
-            else
-            {
-                root->left = pruneTree(root->left);
-                root->right = pruneTree(root->right);
-
-                if (0 == root->val && nullptr == root->left && nullptr == root->right)
-                {
-                    /* prune the tree */
-                    delete root;
-                    root = nullptr;
-                }
-
-                return root;
-            }
-        }
-};
-
 
 int main()
 {

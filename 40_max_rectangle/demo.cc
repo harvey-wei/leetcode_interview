@@ -1,36 +1,46 @@
 #include <iostream>
 #include <vector>
+#include <string>
 #include <stack>
-#include <algorithm>
+
+
 using namespace std;
 
-class Solution {
+
+class Solution
+{
 public:
     int largest_rect(const vector<int>& heights)
     {
-        int max_area = 0;
-        stack<int> mono_stack; // store index and in ascending order
-        mono_stack.push(-1);
+        int max_area = -1;
+        stack<int> idx_stack;
 
-        for (uint i = 0; i < heights.size(); ++i)
+        // -1 is to the left of 0 index and can also avoid empty check.
+        idx_stack.push(-1);
+
+        for (int i = 0; i < heights.size(); ++i)
         {
-            while (mono_stack.top() != -1 && heights[mono_stack.top()] > heights[i])
+            while (-1 != idx_stack.top() && heights[i] < heights[idx_stack.top()])
             {
-                int h = heights[mono_stack.top()];
-                mono_stack.pop();
-                max_area = max<int>(max_area, h * (i - mono_stack.top() - 1));
+                /* The rectangle of height heights[idx_stack.top()] */
+                /* _ - top- i, [_+1, i-1] */
+                int h = heights[idx_stack.top()];
+                idx_stack.pop();
+
+                max_area = max(max_area, h * (i - idx_stack.top() - 1));
             }
 
-            // don't forget to push
-            mono_stack.push(std::move(i));
+            // -1 == top or > push to stack
+            idx_stack.push(i);
         }
 
-        // the remaining bins.
-        while (mono_stack.top() != -1)
+        // remnant
+        while (-1 != idx_stack.top())
         {
-            int h = heights[mono_stack.top()];
-            mono_stack.pop();
-            max_area = max<int>(max_area, h * (heights.size() - mono_stack.top() - 1));
+            int h = heights[idx_stack.top()];
+            idx_stack.pop();
+
+            max_area = max(max_area, h * (int(heights.size()) - idx_stack.top() - 1));
         }
 
         return max_area;
@@ -38,45 +48,32 @@ public:
 
     int maximalRectangle(vector<vector<char>>& matrix)
     {
-        int max_area = 0;
+
+        /**
+         * For each row, we generate a historam of size cols
+         * And them, use the mono-stack to find its max area
+         */
         int rows = matrix.size();
         int cols = matrix[0].size();
+        int max_area = -1;
 
         for (int i = 0; i < rows; ++i)
         {
             vector<int> heights(cols, 0);
-            for (int j = 0; j < cols; ++j)
+            for (int c = 0; c < cols; ++c)
             {
                 int r = i;
-                while (r >= 0 && '1' == matrix[r][j])
+                while (r >= 0 && 1 == matrix[r][c])
                 {
-                    heights[j] += 1;
-
-                    // decrement r
+                    ++heights[c];
                     --r;
                 }
             }
 
-            /* call largest rectangle function */
-            max_area = max<int>(largest_rect(heights), max_area);
+            /* Get max area of historam. */
+            max_area = max(max_area, largest_rect(heights));
         }
 
         return max_area;
     }
 };
-
-int main()
-{
-    /* vector<vector<char>> matrix = {{'1', '0', '1', '0', '0'}, */
-    /*     {'1','0','1','1','1'}, */
-    /*     {'1','1','1','1','1'}, */
-    /*     {'1','0','0','1','0'}}; */
-
-    vector<vector<char>> matrix= {{'1'}};
-
-    Solution sol;
-    std::cout << sol.maximalRectangle(matrix) << std::endl;
-
-    return 0;
-}
-

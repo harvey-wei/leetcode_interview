@@ -1,50 +1,56 @@
-#include <iostream>
 #include <vector>
+#include <unordered_map>
 #include <string>
+
 using namespace std;
+
 
 class Solution {
 public:
-    bool is_sorted(const string& lhs, const string& rhs, const vector<int>& letter2order)
-    {
-        /* aa, aab is ok*/
-        int i = 0;
-        for (; i < lhs.size() && i < rhs.size(); ++i)
-        {
-            char l = lhs[i];
-            char r = rhs[i];
-
-            if (letter2order[l - 'a'] < letter2order[r - 'a']) return true;
-
-            if (letter2order[l - 'a'] > letter2order[r - 'a']) return false;
-        }
-
-        /* lhs == rhs[0:lhs.size()) means being sorted! */
-        return i == lhs.size();
-    }
 
     bool isAlienSorted(vector<string>& words, string order)
     {
-        vector<int> letter2order(26, 0); // Small means front.
-
+        unordered_map<char, int> letter2idx; // fron letter has small index
         for (int i = 0; i < order.size(); ++i)
         {
-            letter2order[order[i] - 'a'] = i;
+            letter2idx[order[i]] = i;
         }
 
-        for (int i = 0; i < words.size() - 1; ++i)
+        for (int i = 0; i <= words.size() - 2; ++i)
         {
-            if (!is_sorted(words[i], words[i + 1], letter2order))
+            const auto& w1 = words[i];
+            const auto& w2 = words[i + 1];
+
+            bool is_sorted = false;
+
+            int j = 0;
+            for (j = 0; j < w1.size() && j < w2.size(); ++j)
+            {
+                if (letter2idx[w1[j]] < letter2idx[w2[j]])
+                {
+                    // correct order and check the next pair of words
+                    is_sorted = true;
+                    break;
+                }
+                else if (letter2idx[w1[j]] > letter2idx[w2[j]])
+                {
+                    // wrong order
+                    return false;
+
+                }
+                else
+                {
+                    // same char and check the next pair of char
+                }
+            }
+
+            if (!is_sorted && j != w1.size())
             {
                 return false;
             }
+
         }
 
         return true;
     }
 };
-
-int main()
-{
-    return 0;
-}

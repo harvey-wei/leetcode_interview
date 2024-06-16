@@ -1,34 +1,73 @@
-#include <queue>
 #include <vector>
+#include <iostream>
+#include <random>
+#include <algorithm>
+#include <utility>
+
 using namespace std;
 
 class Solution {
 public:
-    int findKthLargest(vector<int>& nums, int k) {
-        std::priority_queue<int, std::vector<int>, std::greater<int>> min_heap;
+    int findKthLargest(vector<int>& nums, int k)
+	{
+		/* target_idxth element in sorted nums by in non-decreasing order*/
+		int target_idx = nums.size() - k;
 
-        for (const auto& num: nums)
-        {
-            if (min_heap.size() < k)
-            {
-                min_heap.push(num);
-            }
-            else
-            {
-                const int& top = min_heap.top();
-                if (num > top)
-                {
-                    min_heap.pop();
-                    min_heap.push(num);
-                }
-            }
-        }
+		int left = 0;
+		int right = nums.size() - 1;
 
-        return min_heap.top();
+		int idx = partition(nums, left, right);
+
+		while(target_idx != idx)
+		{
+			if (idx < target_idx)
+			{
+				idx = partition(nums, idx + 1, right);
+			}
+			else
+			{
+				/* idx > target_idx */
+				idx = partition(nums, left, idx - 1);
+			}
+		}
+
+		return nums[target_idx];
     }
+
+private:
+	int partition(vector<int>& nums, int left, int right)
+	{
+		/* Picup pivot index from [left...right] */
+		int pivot_idx = rand() % (right - left + 1) + left;
+		int pivot_val = nums[pivot_idx];
+
+		/* Put pivot to position indexed by right*/
+		swap(nums[pivot_idx], nums[right]);
+
+		/**
+		 * Loop invariant: nums[left...smaller] < pivot_val for nums[left..i]
+		 * nums[smaller + 1,...i] >= pivot_val
+		 */
+		int smaller = left - 1;
+		for (int i = left; i < right; ++i)
+		{
+			if (nums[i] < pivot_val)
+			{
+				++smaller;
+				swap(nums[smaller], nums[i]);
+			}
+		}
+
+		swap(nums[++smaller], nums[right]);
+
+		// smaller is the correct index for pivot_val
+		return smaller;
+
+	}
 };
 
-int main()
+int
+main()
 {
-    return 0;
+	return 0;
 }

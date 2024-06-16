@@ -20,31 +20,37 @@ public:
 
         if (nullptr == root) return res;
 
-        queue<TreeNode*> curr_q;
-        queue<TreeNode*> next_q;
-        queue<TreeNode*>* curr_queue = &curr_q;
-        queue<TreeNode*>* next_queue = &next_q;
+        /* In BFS, push the end node of each level to res */
+        queue<TreeNode*> node_q;
+        TreeNode* curr;
+        node_q.push(root);
 
-        curr_queue->push(root);
-        while (!curr_queue->empty())
+        int curr_cnt = 1;
+        int next_cnt = 0;
+
+        while (!node_q.empty())
         {
-            TreeNode* front = curr_queue->front();
-            curr_queue->pop();
+            curr = node_q.front(); // oldest
+            node_q.pop();
+            --curr_cnt;
 
-            if (front->left != nullptr)
+            if (nullptr != curr->left)
             {
-                next_queue->push(std::move(front->left));
+                node_q.push(curr->left);
+                ++next_cnt;
             }
 
-            if (front->right != nullptr)
+            if (nullptr != curr->right)
             {
-                next_queue->push(std::move(front->right));
+                node_q.push(curr->right);
+                ++next_cnt;
             }
 
-            if (curr_queue->empty())
+            if (0 == curr_cnt)
             {
-                res.push_back(std::move(front->val));
-                swap(curr_queue, next_queue);
+                res.push_back(curr->val);
+                curr_cnt = next_cnt;
+                next_cnt = 0;
             }
         }
 

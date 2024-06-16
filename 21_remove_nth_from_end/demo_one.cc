@@ -109,6 +109,7 @@ ListNode * remove(ListNode *head, const int &val)
 
     while (nullptr != node_ptr->next)
     {
+        // Instead of node_ptr->val to avoid using two node pointers: prev and current.
         if (val == node_ptr->next->val)
         {
             ListNode * temp = node_ptr->next->next;
@@ -120,6 +121,7 @@ ListNode * remove(ListNode *head, const int &val)
         }
         else
         {
+            // Move along the next pointers.
             node_ptr = node_ptr->next;
         }
     }
@@ -136,6 +138,7 @@ public:
     1 <= n <= sz
     */
     ListNode* removeNthFromEnd(ListNode* head, int n) {
+        // Our goal is to locate (n + 1)th from end.
         ListNode dummy_node = ListNode(0, head);
 
         /* Assume list is not empty! */

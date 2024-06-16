@@ -1,134 +1,82 @@
 #include <iostream>
 #include <queue>
+
+
 using namespace std;
 
-struct TreeNode {
-  int val;
-  TreeNode *left;
-  TreeNode *right;
-  TreeNode() : val(0), left(nullptr), right(nullptr) {}
-  TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
-  TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
-};
+struct TreeNode
+{
+    int val;
+    TreeNode* left;
+    TreeNode* right;
 
-class CBTInserter_my {
-private:
-    queue<TreeNode*> node_queue;
-    TreeNode* root;
-
-public:
-    CBTInserter_my(TreeNode* root) {
-        /* Note that the root is not nullptr. */
-        this->root = root;
-        node_queue.push(root);
-    }
-
-    int insert(int val) {
-        int parent_val = 0;
-        TreeNode* node_new = new TreeNode(val);
-
-        while (!node_queue.empty())
-        {
-            TreeNode* parent = node_queue.front();
-
-            /* Don't pop if left is nullptr. */
-            /* Reminder: pop followed by push its child nodes
-               pop means traverse the node/ print the node.
-            */
-            if (nullptr != parent->left)
-            {
-                node_queue.pop();
-            }
-
-            if (nullptr == parent->left)
-            {
-                parent->left = node_new;
-                parent_val = parent->val;
-                break;
-            }
-            else
-            {
-                node_queue.push(parent->left);
-            }
-
-            if (nullptr == parent->right)
-            {
-                parent->right = node_new;
-                node_queue.push(parent->right);
-                parent_val = parent->val;
-                break;
-            }
-            else
-            {
-                node_queue.push(parent->right);
-            }
-
-            /* Optimize the conditional statements after ensuring the correctness. */
-        }
-
-        return parent_val;
-    }
-
-    TreeNode* get_root() {
-        return root;
-    }
+    TreeNode(): val(0), left(nullptr), right(nullptr) {}
+    TreeNode(int x): val(x), left(nullptr), right(nullptr) {}
+    TreeNode(int x, TreeNode* _left, TreeNode* _right): val(x), left(_left), right(_left) {}
 };
 
 
-class CBTInserter{
-private:
-    queue<TreeNode*> node_queue;
-    TreeNode* root;
-
+class CBTInserter {
 public:
-    CBTInserter(TreeNode* root) {
-        /* Note that the root is not nullptr. */
+    CBTInserter(TreeNode* root)
+    {
         this->root = root;
-        node_queue.push(root);
+        /* root should not be null */
+        node_q.push(root);
+        TreeNode* curr;
 
-        /* BFS to the last node who has both left and right child. */
-
-        while (!node_queue.empty() && (nullptr != node_queue.front()->left)
-                &&(nullptr != node_queue.front()->right))
+        /* BFS until meet a non-complete node whose misses left or right child. */
+        /* BFS order matches the filling order of complete binary tree. */
+        while (!node_q.empty() && nullptr != node_q.front()->left
+                && nullptr != node_q.front()->right)
         {
-            TreeNode * parent = node_queue.front();
-            node_queue.pop();
-            node_queue.push(parent->left);
-            node_queue.push(parent->right);
+            curr = node_q.front();
+            node_q.pop();
+            /* We must push left first and then right to match the Completeness Definition. */
+            /* For queue, First in - First out. */
+            node_q.push(curr->left);
+            node_q.push(curr->right);
         }
 
-        /* Invariant: Make sure node in the queue lacks left or right.*/
+        /* Now the front (oldest) node is not complete*/
     }
 
-    int insert(int val) {
-        int parent_val = 0;
-        TreeNode* node_new = new TreeNode(val);
-
-        TreeNode* parent = node_queue.front();
+    int insert(int val)
+    {
+        /**
+         * The key is to track the previous node who are the first one misses left or right node.
+         * Assume we traverse the tree from top to bottom and left to right. (BFS)
+         */
+        TreeNode* parent = node_q.front();
 
         if (nullptr == parent->left)
         {
-            parent->left = node_new;
-
-            parent_val = parent->val;
+            /* Both left and right are missing. */
+            parent->left = new TreeNode(val);
         }
         else
         {
-            parent->right = node_new;
-            node_queue.pop();
-            node_queue.push(parent->left);
-            node_queue.push(parent->right);
-
-            parent_val = parent->val;
+            /* Left is not null but right is missing */
+            parent->right = new TreeNode(val);
+            node_q.pop();
+            node_q.push(parent->left);
+            node_q.push(parent->right);
         }
 
-        return parent_val;
+        // return parent value.
+        return parent->val;
     }
 
-    TreeNode* get_root() {
+    TreeNode* get_root()
+    {
         return root;
     }
+
+private:
+    TreeNode* root;
+    queue<TreeNode*> node_q;
 };
+
 /**
  * Your CBTInserter object will be instantiated and called as such:
  * CBTInserter* obj = new CBTInserter(root);

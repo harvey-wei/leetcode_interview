@@ -1,237 +1,46 @@
 #include <iostream>
-#include <string>
 #include <vector>
-#include <unordered_set>
+
 using namespace std;
 
-/* https://leetcode.com/problems/maximum-product-of-word-lengths/ */
 
 class Solution {
 public:
-    bool is_no_common_char(const string &s1, const string &s2)
+    int maxProduct(vector<string>& words)
     {
-        unordered_set<char> char_set;
+        /**
+         * 1. Convert each word to a 32-bit integer, where the ith bit is 1 if the word contains the ith letter.
+         * 2. Compare each pair of words and find the maximum product of their lengths.
+         * 3. The time complexity is O(n^2) and the space complexity is O(n).
+         * Note that each word consists of lowercase letters only.
+         * So we can use a 32-bit integer to represent the word.
+         * If two word does not share common letters, the ith bit of their integer should be 0-0, 0-1 or 1-0 instead of 1-1.
+         * That is, bitwise and should be zero.
+         */
 
-        for (uint i = 0; i < s1.length(); ++i)
-        {
-            char_set.insert(s1[i]);
-        }
-
-        for (uint i = 0; i < s2.length(); ++i)
-        {
-            /* O(1) WHP */
-            if (char_set.end() != char_set.find(s2[i])) return false;
-        }
-
-        return true;
-    }
-
-    int maxProduct_hashset_naive(vector<string>& words)
-    {
-        int max_prod = 0;
-        // O(n^2k)
-        for (uint i = 0; i < words.size() - 1; ++i)
-        {
-            for (uint j = i + 1; j < words.size(); ++j)
-            {
-                /* O(k) we can pre-compute to save this time.*/
-                /* Each word is inserted to a set words.size() - 1 times -> redundancy */
-                if (is_no_common_char(words[i], words[j]))
-                {
-                    int prod = words[i].length() * words[j].length();
-                    max_prod = max(prod, max_prod);
-                }
-            }
-        }
-
-        return max_prod;
-    }
-
-    int maxProduct_hashset_efficient(vector<string> &words)
-    {
-        /* Key insight: trade space for time!
-           Store the letters in a set for each word and then look up.
-        */
-        int max_prod = 0;
-
-        vector<unordered_set<char>> letters(words.size());
-
-        for (uint i = 0; i < words.size(); ++i)
-        {
-            for (uint j = 0; j < words[i].length(); ++j)
-            {
-                letters[i].insert(words[i][j]);
-            }
-        }
-
-        for (uint i = 0; i < words.size(); ++i)
-        {
-            for (uint j = i + 1; j < words.size(); ++j)
-            {
-                bool is_no_common_char = true;
-                for (int k = 0; k < words[i].length(); ++k)
-                {
-                    if (letters[j].end() != letters[j].find(words[i][k]))
-                    {
-                        is_no_common_char = false;
-                        break;
-                    }
-                }
-
-                if (is_no_common_char)
-                {
-                    int curr_prod = words[i].length() * words[j].length();
-                    max_prod = max(curr_prod, max_prod);
-                }
-            }
-        }
-
-        return max_prod;
-
-    }
-
-    int maxProduct_array(vector<string> &words)
-    {
-        /*Insight: All letters are in lower case!
-          -> Maintain an array of length 26 to label the existence of a certain letter.
-          You need to use this information: There are 26 lower-case letters in total.
-
-          Compute when you need to use it -> might compute the same thing multiple times.
-          Pre-compute all you need in advance and then look up the table -> trade space for time.
-          -> similar to memoization!
-        */
-        int max_prod = 0;
-        const int lc_cnt = 26;
-
-        vector<vector<bool>> flags(words.size(), vector<bool>(lc_cnt, false));
-
-        /*Time: O(nk)
-        */
-        for (uint i = 0u; i < words.size(); ++i)
-        {
-            for (uint j = 0u; j < words[i].length(); ++j)
-            {
-                flags[i][words[i][j] - 'a'] = true;
-            }
-        }
-
-        /* Time: O(n^2)*/
-        for (uint i = 0; i < words.size(); ++i)
-        {
-            for (uint j = i + 1; j < words.size(); ++j)
-            {
-                /*
-                   Instead of comparing each letter in a word with another word, we check if each of
-                   26 lower case letters exist in both words[i] and words[j].
-                   > Time: O(1) instead fo O(k) with k the max length of word.
-                */
-                bool is_no_common_char = true;
-
-                for (int k = 0; k < lc_cnt; ++k)
-                {
-                    if (true == flags[i][k] && true == flags[j][k])
-                    {
-                        is_no_common_char = false;
-                        break;
-                    }
-                }
-
-                if (is_no_common_char)
-                {
-                    int curr_prod = words[i].length() * words[j].length();
-                    max_prod = max(curr_prod, max_prod);
-                }
-            }
-
-        }
-
-        return max_prod;
-
-    }
-
-    int maxProduct_bitmask(vector<string> &words)
-    {
-        int max_prod = 0;
-
-        vector<int> flags(words.size(), 0);
-        const int lc_cnt = 26;
-
-        for (uint i = 0; i < words.size(); ++i)
-        {
-            for (uint j = 0; j < words[i].length(); ++j)
-            {
-                /* LSB indicates 'a'*/
-                flags[i] |= (1 << (words[i][j] - 'a'));
-            }
-        }
-
-        /* Time: O(n^2)*/
-        for (uint i = 0; i < words.size(); ++i)
-        {
-            for (uint j = i + 1; j < words.size(); ++j)
-            {
-                /*
-                   Instead of comparing each letter in a word with another word, we check if each of
-                   26 lower case letters exist in both words[i] and words[j].
-                   > Time: O(1) instead fo O(k) with k the max length of word.
-                */
-
-                /* Key insight: if ith word and jth word have letters in common, bitwise-and of
-                   their bitmasks should be > 0. */
-                if (0 == (flags[i] & flags[j]))
-                {
-                    int curr_prod = words[i].length() * words[j].length();
-                    max_prod = max(curr_prod, max_prod);
-                }
-
-                /* int is_no_common_char = true; */
-                /* for (int k = 0; k < lc_cnt; ++k) */
-                /* { */
-                /*     if ((1 == ((flags[i] >> k) & 1)) && (1 == ((flags[j] >> k) & 1))) */
-                /*     { */
-                /*         is_no_common_char = false; */
-                /*         break; */
-                /*     } */
-                /* } */
-
-                /* if (is_no_common_char) */
-                /* { */
-                /*     int curr_prod = words[i].length() * words[j].length(); */
-                /*     max_prod = max(curr_prod, max_prod); */
-                /* } */
-            }
-
-        }
-
-        return max_prod;
-    }
-
-    int maxProduct(vector<string>  words)
-    {
-        /* Encode each word into a int32 since each word consist of lowercase letters. */
-        /* sign bit, MSB, ..., LSB */
-        /* LSB stands for 'a'*/
-        vector<int> word_letters(words.size(), 0);
-
+        std::vector<int> word_hash_tab(words.size(), 0);
         for (size_t i = 0; i < words.size(); ++i)
         {
-            for (const auto& letter : words[i])
+            for (const auto& ch : words[i])
             {
-                word_letters[i] |= (1 << (letter - 'a'));
+                /* set word_hash_tab[i]'s [ch - 'a']th bit to 1 */
+                word_hash_tab[i] |= 1 << (ch - 'a');
             }
         }
 
-        /* If no two words has no common chars, then return 0. */
         int max_prod = 0;
-
         for (size_t i = 0; i < words.size(); ++i)
         {
-            /* do not look back */
             for (size_t j = i + 1; j < words.size(); ++j)
             {
-                if ((word_letters[i] & word_letters[j]) == 0)
+                /**
+                 * If words[i] and words[j] does not share common letters,
+                 * each bit of letter should be 0-0, 0-1, 1-0 instead of 1-1
+                 * Bitwise and should be zero
+                 */
+                if (0 == (word_hash_tab[i] & word_hash_tab[j]))
                 {
-                max_prod = std::max<int>(max_prod, words[i].size() * words[j].size());
+                    max_prod = std::max<size_t>(max_prod, words[i].size() * words[j].size());
                 }
             }
         }
@@ -240,7 +49,9 @@ public:
     }
 };
 
-int main()
+
+int
+main(int argc, char** argv)
 {
     Solution sol;
     vector<string> words = {"abcw","baz","foo","bar","xtfn","abcdef"};
@@ -248,10 +59,30 @@ int main()
     int max_prod = sol.maxProduct(words);
     cout << "max_prod: " << max_prod << endl;
 
-    int a = 1;
-    int b = a << 3;
-    cout << "a " << a << endl;
-    cout << "b " << b << endl;
-
     return 0;
 }
+
+
+/**
+ * Bitwise operator for int
+ * 1. How to set the right-most 1 of int to zero?
+ *      a & (a - 1)
+ * 2. How to halve the int ?
+        (a +  1) >> 1 Note plus 1 for negative int
+ * 3. How to get the ith bit value of int? (i = 0, 1, 2, ... 31)
+        (a >> i) & 1
+ * 4. How to set the ith bit to 1?
+        a |= (1 << i)
+ * 5. How to unset the ith bit to 1?
+        a &= ~(1 << i)
+ */
+
+
+        /*
+         * (a >> i) & 1 -> get the ith bit of a.
+         * a |= (1 << i) -> set the ith bit of a.
+         * a &= ~(1 << i) -> unset the ith bit of a.
+         * ^ is the XOR operator.
+         * ~ is the bitwise NOT operator.
+         * ~(1 << i) -> is a mask with all bits set to 1 except the ith bit.
+         */

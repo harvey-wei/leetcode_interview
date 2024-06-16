@@ -213,7 +213,7 @@ public:
         /* Step 1: find the node where the slow and fast pointers meet for the first time. */
         /* Image these two pointers go from a dummy node. */
         ListNode * slow = head;
-        ListNode * fast = head->next;
+        ListNode * fast = head->next;  // Must have distance diff even in the
         ListNode * inter_node = nullptr;
         while (nullptr != fast->next && nullptr != fast->next->next)
         {
@@ -236,7 +236,7 @@ public:
 
         /* Key observation:
            when the slow and fast pointer meets for the first time.
-          (|f| - |L|) - (|s| - |L|) |f| - |s| = C and |f| = 2|s| -> |s| = C
+          (|f| - |L|) - (|s| - |L|) = |f| - |s| = C and |f| = 2|s| -> |s| = C
           with L as the count of nodes between head and entrance, exclusive.
           That is, slow pointer has traversed exactly the same number nodes as cycle has.
           Like but not the same Cth from end!!

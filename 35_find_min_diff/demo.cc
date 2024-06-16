@@ -1,125 +1,95 @@
 #include <iostream>
-#include <vector>
 #include <string>
+#include <cctype>
+#include <vector>
+#include <algorithm>
+#include <climits> // INT_MAX, INT_MIN
+
+
 using namespace std;
 
-class Solution {
+class Solution
+{
 public:
-    int parse_time_to_minutes(const string& time)
+    int findMinDifference(vector<string>& timepoints)
     {
-        /*HH: MM*/
-        bool is_colon_visited = false;
-        vector<int> hour;
-        vector<int> minute;
-        for (int i = 0; i < time.size(); ++i)
+        /* timepoints.size() >= 2 */
+        const int tp_cnt = 24 * 60;
+        std::vector<bool> tp_map(tp_cnt, false);
+
+        int min_tp = INT_MAX;
+        int max_tp = INT_MIN;
+        for (const auto& tp : timepoints)
         {
-            if (':' == time[i])
+            int minutes = std::stoi(tp.substr(0, 2)) * 60 + std::stoi(tp.substr(3, 2));
+            min_tp = min(min_tp, minutes);
+            max_tp = max(max_tp, minutes);
+
+            if (tp_map[minutes])
             {
-                is_colon_visited = true;
-            }
-            else if (time[i] >= '0' && time[i] <= '9')
-            {
-                if (!is_colon_visited)
-                {
-                    hour.push_back(time[i] - '0');
-                }
-                else
-                {
-                    minute.push_back(time[i] - '0');
-                }
-            }
-        }
-
-        int mins = (hour[0] * 10 + hour[1]) * 60 + minute[0] * 10 + minute[1];
-
-        return mins;
-    }
-
-    int findMinDifference(vector<string>& timePoints)
-    {
-        /*
-            00:00 - 23:59
-            24 * 60  = 1440
-
-            Observation 1: In sorted time point series, min diff is in between two successive
-            points OR 00:00 and HH:MM. Hence, you need to convert 00:00 to 24:00= 1420
-
-            comparison-based sort: O(nlogn)
-            linear sort: O(n) + 1440-elment vector
-        */
-        const int time_len = 24 * 60; // we don't use 0
-        if (timePoints.size() > time_len) return 0;
-
-        vector<bool> time_point(time_len + 1, false); // put zero to the end.
-        int min_time = INT32_MAX;
-        int max_time = -INT32_MAX;
-
-        for (const auto& point: timePoints)
-        {
-                int mins = parse_time_to_minutes(point);
-                if (0 == mins)
-                {
-                    mins = time_len;
-                }
-
-                if (time_point[mins]) return 0;
-
-                time_point[mins] = true;
-                min_time = min(min_time, mins);
-                max_time = max(max_time, mins);
-        }
-
-        /* Note that timePoints.size() >= 2*/
-        int32_t min_diff = min_time + 24 * 60 - max_time;
-        int prev = 1;
-        int next = 1;
-
-        while (prev < time_point.size())
-        {
-            if (time_point[prev])
-            {
-                next = prev + 1;
-
-                if (next >= time_point.size()) break;
-
-                while (next < time_point.size() && !time_point[next])
-                {
-                    ++next;
-                }
-
-                if (next < time_point.size() && time_point[next])
-                {
-                    min_diff = min(next - prev, min_diff);
-                    prev = next;
-                }
-                else
-                {
-                    break;
-                }
+                // same time point
+                return 0;
             }
             else
             {
-                ++prev;
+                tp_map[minutes] = true;
             }
-            /* Don't forget to update prev and next pointers. */
         }
 
-        /* Need to rectify! */
-        return min_diff;
+        int min_diff = INT_MAX;
+        // compare adjacent
+        int i = min_tp;
+        int j;
+
+        while (i < max_tp)
+        {
+            /* Find the next true */
+            j = i + 1;
+
+            while (j <= max_tp && !tp_map[j])
+            {
+                ++j;
+            }
+
+            if (j <= max_tp && tp_map[j])
+            {
+                min_diff = min(j - i, min_diff);
+            }
+
+            i = j;
+        }
+
+        // min + 24 * 60 - max;
+        return  min(min_diff, min_tp + tp_cnt - max_tp);
     }
 };
 
-int main()
-{
-    Solution sol;
-    /* string time = "23:59"; */
-    string time = "00: 00";
-    std::cout << "time to minutes: " << sol.parse_time_to_minutes(time) << std::endl;
-    /* vector<string> timePoints = {"23: 59", "00: 00", "00:00"}; */
-    /* vector<string> timePoints = {"00: 00", "04: 00", "22:00"}; */
-    vector<string> timePoints = {"05:31","22:08","00:35"}; 
-    int min_diff = sol.findMinDifference(timePoints);
-    std::cout << "min_diff: " << min_diff << std::endl;
 
-    return 0;
-}
+class Solution_
+{
+public:
+    int findMinDifference(vector<string>& timepoints)
+    {
+        const int time_point_cnt = 24 * 60;
+        vector<int> tp_m;
+        for (const auto& tp : timepoints)
+        {
+            int minis = stoi(tp.substr(0, 2)) * 60 + stoi(tp.substr(3, 2));
+            tp_m.push_back(minis);
+        }
+
+        std::sort(tp_m.begin(), tp_m.end()); // non-descending order and in-place
+
+        // diff of adjacent time points
+        // [i, i + 1]  i + 1 < size()
+        int min_diff = INT_MAX;
+        for (int i = 0; i < tp_m.size() - 1; ++i)
+        {
+            min_diff = min(min_diff, tp_m[i + 1] - tp_m[i]);
+        }
+
+        // Diff of min + time_point_cnt - max
+        return min(min_diff, tp_m[0] + time_point_cnt - tp_m[tp_m.size() - 1]);
+    }
+
+};

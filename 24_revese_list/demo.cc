@@ -10,25 +10,24 @@ struct ListNode
 
 class Solution
 {
+    public:
     ListNode* reverseList(ListNode* head)
     {
-        if (nullptr == head) return nullptr;
-
-        /* Old head points to nullptr as tail. */
-        ListNode * prev = nullptr;
-        ListNode * curr = head;
-        ListNode * next;
+        /* We reset the curr->next to prev */
+        /* Move prev curr to tail. */
+        /* For the head, we reset head->next to null*/
+        ListNode* prev = nullptr;
+        ListNode* curr = head;
+        ListNode* next;
 
         while (nullptr != curr)
         {
             next = curr->next;
             curr->next = prev;
 
-            /* update curr and next */
             prev = curr;
             curr = next;
         }
-        /*  curr == nullptr but prev is the new head */
 
         return prev;
     }

@@ -3,193 +3,122 @@
 #include <stack>
 #include <sstream>
 #include <iostream>
+#include <cctype>
 
 using namespace std;
 
- struct TreeNode {
+struct TreeNode {
      int val;
      TreeNode *left;
      TreeNode *right;
      TreeNode(int x) : val(x), left(NULL), right(NULL) {}
 };
 
-class Codec_itera {
-public:
 
-    // Encodes a tree to a single string.
-    string serialize(TreeNode* root) {
-        /* Traverse by BFS or DFS */
-        string data;
-
-        TreeNode* curr = root;
-        queue<TreeNode*> tree_queue;
-
-        if (curr != nullptr)
-        {
-            tree_queue.push(std::move(curr));
-        }
-
-        while (!tree_queue.empty())
-        {
-            curr = tree_queue.front();
-            tree_queue.pop();
-
-            if (nullptr != curr)
-            {
-                /* Append curr->val to data */
-                data = data + std::to_string(curr->val) + ",";
-                /* Different from normal BFS, we also push nullptr to ensure we can reconstruct. */
-                tree_queue.push(curr->left);
-                tree_queue.push(curr->right);
-            }
-            else
-            {
-                data += "#,";
-            }
-        }
-
-        return data;
-    }
-
-    // Decodes your encoded data to tree.
-    TreeNode* deserialize(string data) {
-        if (data.empty()) return nullptr;
-
-        vector<string> node_val; // nullptr is "#"
-        std::stringstream data_stream;
-        data_stream.str(data);
-        std::string curr_val_str;
-
-        while (getline(data_stream, curr_val_str, ','))
-        {
-            node_val.push_back(std::move(curr_val_str));
-        }
-
-        int curr_idx = 0;
-        TreeNode* root = new TreeNode(std::stoi(node_val[curr_idx]));
-        queue<TreeNode*> tree_q;
-        tree_q.push(root);
-        TreeNode* curr;
-
-        while (!tree_q.empty())
-        {
-            curr = tree_q.front();
-            tree_q.pop();
-
-            string left = node_val[++curr_idx];
-            string right = node_val[++curr_idx];
-
-            if (left != "#")
-            {
-                curr->left = new TreeNode(std::stoi(left));
-                tree_q.push(curr->left);
-            }
-            else
-            {
-                curr->left = nullptr;
-            }
-
-            if(right != "#")
-            {
-                curr->right = new TreeNode(std::stoi(right));
-                tree_q.push(curr->right);
-            }
-            else
-            {
-                curr->right = nullptr;
-            }
-        }
-
-        return root;
-    }
-};
-
+/*
+   Extended ASCII code use 8-bit numeric representation and ranges from 0 to 255;
+   For 0-9, their ASCII (char or uint8) code order matches original order, i.e.
+   '0' < '1' < ... < '9'. The difference of any two consecutive digit char is 1.
+   For lowercase letters,
+   'a' < 'b' < 'c' < ... < 'z'. The difference of any two consecutive lowercases is 1.
+   For uppercase letters,
+   'A' < 'B' < 'C' < ... < 'Z'. The difference of any two consecutive lowercases is 1.
+*/
 
 class Codec {
 public:
     void preorder_dfs(TreeNode* root, string& data)
     {
+        /* data should be initialized as a emtpy string "". */
         if (nullptr == root)
         {
-            data =  data + "#" + ",";
+            // base case null node.
+            data = data +  "#" + ",";
+            return;
         }
         else
         {
-            data = data + std::to_string(root->val) + ",";
+            data += std::to_string(root->val);
+            data += ",";
 
+            // nullptr is handled by the next call.
             preorder_dfs(root->left, data);
             preorder_dfs(root->right, data);
-        }
 
-        return;
+            return;
+        }
     }
 
     // Encodes a tree to a single string.
     string serialize(TreeNode* root)
     {
-        string data;
+        string data = "";
         preorder_dfs(root, data);
 
         return data;
-
     }
 
-    TreeNode* preorder_dfs_des(queue<string>& data)
-    {
-        string curr_val_str = data.front();
-        data.pop();
+    /**
+     * How to construct the tree?
+     * With the help of the null node (coded as "#"), we can image we have a binary tree.
+     * We just do recusive dfs as dfs-serialization. Each call create a node (it might be null)
+     */
 
-        if ("#" == curr_val_str)
+    TreeNode* dfs_des(queue<string>& data_q)
+    {
+        /* You have to ensure data_q is not empty before pass it to dfs_des */
+        string curr_str = data_q.front();
+        data_q.pop();
+        if ("#" == curr_str)
         {
             return nullptr;
         }
 
-        TreeNode* root = new TreeNode(std::stoi(curr_val_str));
-        if (!data.empty())
+        TreeNode* root = new TreeNode(stoi(curr_str));
+
+        if (!data_q.empty())
         {
-            root->left = preorder_dfs_des(data);
+            root->left = dfs_des(data_q);
         }
-        if (!data.empty())
+
+        if (!data_q.empty())
         {
-            root->right = preorder_dfs_des(data);
+            root->right = dfs_des(data_q);
         }
+
 
         return root;
     }
 
-    // Decodes your encoded data to tree.
+    // Decodes your encoded data (string type) to tree.
     TreeNode* deserialize(string data)
     {
-        queue<string> node_val; // nullptr is "#"
-        string curr;
-        for (unsigned int i = 0; i < data.size(); ++i)
+        /* step 1: extract node value from data and push to queue. */
+        /* queue has first-in-first-out. Hence, it maintains the visiting order of serialization*/
+        queue<string> data_q;
+        string curr = ""; // vector char
+
+        for (int i = 0; i < data.size(); ++i)
         {
-            /*
-               Extended ASCII code use 8-bit numeric representation and ranges from 0 to 255;
-               For 0-9, their ASCII (char or uint8) code order matches original order, i.e.
-               '0' < '1' < ... < '9'. The difference of any two consecutive digit char is 1.
-               For lowercase letters,
-               'a' < 'b' < 'c' < ... < 'z'. The difference of any two consecutive lowercases is 1.
-               For uppercase letters,
-               'A' < 'B' < 'C' < ... < 'Z'. The difference of any two consecutive lowercases is 1.
-            */
-            if ((data[i] >= '0' && data[i] <= '9') || data[i] == '#')
+            /* There might be negatives */
+            /* if ('-' == data[i] || isdigit(data[i]) || '#' == data[i]) */
+            if (',' != data[i])
             {
                 curr.push_back(data[i]);
             }
             else
             {
-                /* comma */
-                node_val.push(std::move(curr));
+                /* data[i0] == ',' marks the end of one node value. */
+                data_q.push(curr);
                 curr = "";
             }
         }
-        data = "";
 
+        // Note that the tree might be empty!
         TreeNode* root = nullptr;
-        if (!node_val.empty())
+        if (!data_q.empty())
         {
-            root = preorder_dfs_des(node_val);
+            root = dfs_des(data_q);
         }
 
         return root;

@@ -1,4 +1,3 @@
-// 你必须定义一个 `main()` 函数入口。
 #include <iostream>
 #include <string>
 #include <unordered_map>

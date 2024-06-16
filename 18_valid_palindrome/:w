@@ -1,0 +1,42 @@
+#include <iostream>
+#include <string>
+#include <cctype> //
+
+
+using namespace std;
+
+class SolutionIter {
+public:
+    bool isPalindrome(string s)
+    {
+        int l = 0;
+        int r = s.size() - 1;
+
+        /* Instead of skipp all non-alphanumerics. */
+        /* We could move one step at a time to use the while condition. */
+        while (l <= r)
+        {
+            if (!isalnum(s[l]))
+            {
+                ++l;
+            }
+            else if (!isalnum(s[r]))
+            {
+                --r;
+            }
+            else if (tolower(s[l]) != tolower(s[r]))
+            {
+                // Both s[l] and s[r] are alphanumerics;
+                return false;
+            }
+            else
+            {
+                // Both s[l] and s[r] are alphanumerics and identical.
+                ++l;
+                --r;
+            }
+        }
+
+        return true;
+    }
+};

@@ -1,128 +1,86 @@
-struct ListNode {
-    int val;
-    ListNode *next;
-    ListNode() : val(0), next(nullptr) {}
-    ListNode(int x) : val(x), next(nullptr) {}
-    ListNode(int x, ListNode *next) : val(x), next(next) {}
-};
+/**
+ * Definition for singly-linked list.
+ */
 
-class Solution { public: ListNode* bisect_list(ListNode* head) {
-        /* zero and singleton list can not be biscected! */
-        if (nullptr == head || nullptr == head->next) return nullptr;
 
-        /* Both fast and slow start from the head in which cases we count the # of edges. */
-        /*
-         * Even # of nodes: 1->2->3->4->5->6
-         * Fast: 1, 3, 5 but fast->next is not null
-         * Slow: 1, 2, 3  but  4 as the head of second half
-         * Odd # of nodes: 1->2->3->4->5
-         * Fast: 1, 3, 5 fast->next == null
-         * Slow: 1, 2, 3 but 4 as the head of a second half
-         * But the rear half has one more nodes than the front half!
-         *
-         * Fail if there are only two nodes.
-         * 1->2
-         * Fast: 1
-         * Slow: 1
-         *
-         * Hence, we need to start from a imagine dummy head to make the number of steps == # of
-         nodes.
-         * Even # of nodes: 1->2->3->4->5->6
-         * Fast: 2, 4, 6 => fast->next == null
-         * Slow: 1, 2, 3  but  4 as the head of second half
+ struct ListNode {
+     int val;
+     ListNode *next;
+     ListNode() : val(0), next(nullptr) {}
+     ListNode(int x) : val(x), next(nullptr) {}
+     ListNode(int x, ListNode *next) : val(x), next(next) {}
+ };
 
-         * Odd # of nodes: 1->2->3->4->5
-         * Fast: 2, 4 => fast->next != null
-         * Slow: 1, 2 but 4 as the head of a second half
-         */
-
-        /* start from a virtual dummy head! */
-        ListNode* fast = head->next;
-        ListNode* slow = head;
-
-        while (nullptr != fast->next && nullptr != fast->next->next)
-        {
-            fast = fast->next->next;
-            slow = slow->next;
-        }
-
-        ListNode* rear;
-
-        if (nullptr == fast->next)
-        {
-            /* Even # of nodes. */
-            rear = slow->next;
-            slow->next = nullptr;
-        }
-        else
-        {
-            /* Odd # of nodes. */
-            rear = slow->next;
-            slow->next = nullptr;
-            ListNode* temp = rear->next;
-            rear->next = nullptr;
-            rear = temp;
-        }
-
-        return rear;
-    }
-
+class Solution {
+public:
     ListNode* reverse_list(ListNode* head)
     {
         if (nullptr == head) return nullptr;
 
         ListNode* prev = nullptr;
         ListNode* curr = head;
-        ListNode* next;
+        ListNode* next = nullptr;
 
-        while (nullptr != curr)
+        while(nullptr != curr)
         {
             next = curr->next;
             curr->next = prev;
 
-            /* update prev, curr, and next */
+            // update curr and prev
             prev = curr;
             curr = next;
         }
 
-        /* curr == null but pev is the new head */
+        // curr == null
         return prev;
     }
 
-    bool is_equal(ListNode* front, ListNode* rear)
+    bool isPalindrome(ListNode* head)
     {
-        /* Note that fron list may have one more nodes than that of the rear list */
-        while (nullptr != rear)
-        {
-            if (rear->val != front->val) return false;
+        /* Edge cases. */
+        if (nullptr == head) return false;
+        if (nullptr == head->next) return true;
 
-            // update front and rear
-            rear = rear->next;
-            front = front->next;
+        /**
+         * We need the end node of first half. Hence, we start at a dummy head.
+         * even: 1-2-3-4, we need 2 as the head of second half. slow == 2
+         * odd:  1-2-3-4-5, we need 3, slow = 3
+         * If we start at , for even, 3 is chonse, for odd 3 is chosen
+         * While loop is over, fast->next == null ? can be used to tell apart even/odd.
+         * Start from head or a dummy head?
+         * fast can reach null or not
+         */
+        ListNode* slow = head;
+        ListNode* fast = head->next;
+
+        while (nullptr != fast && nullptr != fast->next)
+        {
+            slow = slow->next;
+            fast = fast->next->next;
+        }
+
+        // For even: fast->next == nullptr
+        // For odd: fast == nullptr
+
+        ListNode* first = head;
+        ListNode* second = slow->next;
+        slow->next = nullptr;
+
+        second = reverse_list(second);
+
+        while (nullptr != first && nullptr != second)
+        {
+            if (first->val != second->val)
+            {
+                return false;
+            }
+            else
+            {
+                first = first->next;
+                second = second->next;
+            }
         }
 
         return true;
-
-    }
-
-    bool isPalindrome(ListNode* head) {
-        /* step 1: biscect the given list.
-         * work a few example to handle even-length and odd-length list.
-         */
-        ListNode* rear = bisect_list(head);
-
-        /* step 2: reverse the rear half. */
-        rear = reverse_list(rear);
-
-        /* step 3: compare the front half and rear half. */
-
-        return is_equal(head, rear);
     }
 };
-
-int
-main(int argc, char** argv)
-{
-    return 0;
-}
-

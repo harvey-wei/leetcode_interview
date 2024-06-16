@@ -1,72 +1,53 @@
 #include <iostream>
 #include <vector>
-using namespace std;
 
-class Solution {
+using  namespace std;
+
+
+class Solution
+{
 public:
-    vector<int> asteroidCollision(vector<int>& asteroids) {
-        /*
-           + ->
-           - <-
-           + -> <- -
-           if current is - <-, we need decide whether it will collide with top.
-           if current is + <-, push to stack directly.
-           if stack is empty, push to stack
-
-           Note that: vector<int> can simulate stack
-        */
-        vector<int> stack;
+    vector<int> asteroidCollision(vector<int>& asteroids)
+    {
+        vector<int> ast_stack;
 
         for (int i = 0; i < asteroids.size(); ++i)
         {
-            if (stack.empty())
+            if (ast_stack.empty() || asteroids[i] > 0)
             {
-                stack.push_back(std::move(asteroids[i]));
+                // push current asteroid
+                ast_stack.push_back(asteroids[i]);
             }
             else
             {
-                /* not empty */
-                if (asteroids[i] > 0)
-                {
-                    stack.push_back(std::move(asteroids[i]));
-                }
-                else
-                {
-                    /* current is < 0. */
-                    bool is_curr_destroyed = false;
+                /* ast_stack is not empyt and current is < 0 */
+                bool is_current_destroyed = false;
 
-                    while (!is_curr_destroyed && !stack.empty() && stack.back() > 0)
+                while (!is_current_destroyed && !ast_stack.empty() && ast_stack.back() > 0)
+                {
+                    if (abs(asteroids[i]) < ast_stack.back())
                     {
-                        if (abs(asteroids[i]) > abs(stack.back()))
-                        {
-                            stack.pop_back();
-                        }
-                        else if (abs(asteroids[i]) == abs(stack.back()))
-                        {
-                            is_curr_destroyed = true;
-                            stack.pop_back();
-                        }
-                        else
-                        {
-                            is_curr_destroyed = true;
-                        }
+                        is_current_destroyed = true;
                     }
-
-                    if (!is_curr_destroyed)
+                    else if (abs(asteroids[i]) == ast_stack.back())
                     {
-                        stack.push_back(std::move(asteroids[i]));
+                        is_current_destroyed = true;
+                        ast_stack.pop_back();
+                    }
+                    else
+                    {
+                        /* back is destroyed */
+                        ast_stack.pop_back();
                     }
                 }
 
+                // push current if not destroyed
+                if (!is_current_destroyed) ast_stack.push_back(asteroids[i]);
             }
         }
 
-        return stack;
 
+        return ast_stack;
     }
-};
 
-int main()
-{
-    return 0;
-}
+};

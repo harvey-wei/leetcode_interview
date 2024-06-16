@@ -1,106 +1,14 @@
 #include <iostream>
 #include <string>
 #include <vector>
+
 using namespace std;
 
-/* https://leetcode.com/problems/permutation-in-string/submissions/ */
 class Solution {
 public:
-    bool is_all_zero(const vector<int> nums)
+    bool is_all_zero(const std::vector<int>& nums)
     {
-        for (const auto &cnt: nums)
-        {
-            if (0 != cnt)
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    bool checkInclusion(string s1, string s2)
-    {
-        if (s2.length() < s1.length())
-        {
-            return false;
-        }
-        /* Time: O(|s1|)*/
-        vector<int> letter2cnt(26, 0);
-        /* for (const auto &ch: s1) */
-        /* { */
-        /*     letter2cnt[ch - 'a'] += 1; */
-        /* } */
-
-        int len_s1 = s1.length();
-        /*[ ) s2.length() - 0
-          [s, e) length = e - s, s = e - length
-          How to calculate the start index of the last window of length len_s1?
-          We know end index (exclusive) is s2.length(). Hence, start index (inclusive) is
-          s2.length() - len_s1!
-          Time: O(|s1||s2|) inefficient.
-          Consecutive windows overlap with each other! ->  redundancy!
-          We need double pointers to rescue!
-        */
-        /* for (int i = 0; i <= (s2.length() - len_s1); ++i) */
-        /* { */
-        /*     for (int j = i; j < i + len_s1; ++j) */
-        /*     { */
-        /*         letter2cnt[s2[i] - 'a'] -= 1; */
-        /*     } */
-        /* } */
-
-        /* Double pointers are used to indicate the start and end index of the window with length
-           == length of s1. (inclusive, [start, end])
-           Key insights: move left pointer to left, cancel the effect of previous left element
-           move right pointer to right, add the effect of new end element!
-           // But we need a initial window to trigger this. //
-           for (right pointer is moving in one direction)
-           {
-              initialize left pointer <= right pointer
-              while (left pointer <= right pointer)
-              {
-                moving right pointer.
-              }
-           }
-
-        */
-        /*
-           check the first window of length equal to s1 in s2.
-        */
-        for (int i = 0; i < len_s1; ++i)
-        {
-            letter2cnt[s1[i] - 'a'] += 1;
-            letter2cnt[s2[i] - 'a'] -= 1;
-        }
-
-        if (is_all_zero(letter2cnt))
-        {
-            return true;
-        }
-
-        for (int right = len_s1; right < s2.length(); ++right)
-        {
-            int left = right - len_s1;
-            letter2cnt[s2[left] - 'a'] += 1;
-            letter2cnt[s2[right] - 'a'] -=1;
-
-            if (is_all_zero(letter2cnt))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-};
-
-class SolutionTwo
-{
-public:
-    bool is_all_zero(const std::vector<int>& letter2cnt)
-    {
-        for (const auto& num : letter2cnt)
+        for (const auto& num : nums)
         {
             if (0 != num)
             {
@@ -109,53 +17,37 @@ public:
         }
 
         return true;
+
     }
 
-    bool checkInclusion(string s1, string s2) {
-        /* both s1 and s2 are ensured to non-empty! */
-        /* corner case */
-        if (s1.size() > s2.size())
-        {
-            return false;
-        }
+    bool checkInclusion_(string s1, string s2)
+    {
+        if (s1.size() > s2.size()) return false;
 
-        /**
-         * Order does not count which leads us to encode s1 into a hashmap from letter to
-         * number of occurrences.
-         * Given all the keys of hashmap comes from 26 lowercase English letters, we use std::vector
-         * to emulate the hashmap.
-         */
+        /* All letters are lowcase. 26 letters */
         std::vector<int> letter2cnt(26, 0);
-        for (const auto ch : s1)
-        {
-            ++letter2cnt[ch - 'a'];
-        }
-        /**
-         * At this point, letter2cnt becomes a target state.
-         * The problem reduces to search for a window which can zero the whole letter2cnt.
-         */
 
-        /* Initialize the state */
-        for(size_t i = 0; i < s1.size(); ++i)
+        /* State of s1. */
+        for (int i = 0; i < s1.size(); ++i)
         {
-            --letter2cnt[s2[i] - 'a'];
+            letter2cnt[s1[i] - 'a'] += 1;
+
+            /* The first window */
+            letter2cnt[s2[i] - 'a'] -= 1;
         }
 
-        if (is_all_zero(letter2cnt))
-        {
-            return true;
-        }
+        if (is_all_zero(letter2cnt)) return true;
 
-        /* why <= s2.size() - s1.size() ?
-         * think in semi-open interval [i, j) j - i == length of array.
-         * size() - (size() - s1.size()) == s1.size()*/
-        for (size_t i = 1; i <= s2.size() - s1.size(); ++i)
+        /* Check subsring [l, l + s1.size()) */
+        /* l_min = 0, l_max = s2.size - s1.size()*/
+        /* l == 0 is already checked. */
+        for (int l = 1; l <= s2.size() - s1.size(); ++l)
         {
-            /* update the state */
-            ++letter2cnt[s2[i - 1] - 'a'];
-            --letter2cnt[s2[i + s1.size() - 1] - 'a'];
+            /* update window state. l - 1 is removed, l + s1.size() - 1 is inserted. */
+            letter2cnt[s2[l - 1] - 'a'] += 1;
+            letter2cnt[s2[l + s1.size() - 1] - 'a'] -= 1;
 
-            /* check the state */
+            /* Check if letter2cnt is all zero */
             if (is_all_zero(letter2cnt))
             {
                 return true;
@@ -164,14 +56,86 @@ public:
 
         return false;
     }
+
+    bool checkInclusion(string s1, string s2)
+    {
+        if (s1.size() > s2.size()) return false;
+
+        std::vector<int> s1_ch2cnt(26, 0);
+        std::vector<int> s2_ch2cnt(26, 0);
+
+        for (size_t i = 0; i < s1.size(); ++i)
+        {
+            ++s1_ch2cnt[s1[i] - 'a'];
+            ++s2_ch2cnt[s2[i] - 'a'];
+        }
+
+        /* For 26 letters, count tracks the number of *frequence matches*. */
+        /* Initial Count of Matches. */
+        int count = 0;
+        for (int i = 0; i < 26; ++i)
+        {
+            if (s1_ch2cnt[i] == s2_ch2cnt[i])
+            {
+                ++count;
+            }
+        }
+
+        if (26 == count) return true;
+
+        /**
+         * Slide a window over s2.
+         * [i, i + s1.size())
+         */
+        for (size_t i = 1; i <= s2.size() - s1.size(); ++i)
+        {
+            int l = i - 1; // left_removed
+            int r = i + s1.size() - 1; // right_inserted
+
+
+            /* Decrement the frequence of s2[l]. */
+            --s2_ch2cnt[s2[l] - 'a'];
+            if (s1_ch2cnt[s2[l] - 'a'] == s2_ch2cnt[s2[l] - 'a'])
+            {
+                /* Produce a new match. */
+                ++count;
+            }
+            else if (s1_ch2cnt[s2[l] - 'a'] == s2_ch2cnt[s2[l] - 'a'] + 1)
+            {
+                /* Remove a old match by removeing one letter occurence */
+                /* Which means s2_ch2cnt[s2[l] - 'a'] gets one less than target. */
+                --count;
+            }
+            else
+            {
+                /* Do nothing. */
+            }
+
+            /* Increment the frequence of s2[r]. */
+            ++s2_ch2cnt[s2[r] - 'a'];
+            if (s1_ch2cnt[s2[r] - 'a'] == s2_ch2cnt[s2[r] - 'a'])
+            {
+                /* Produce a new match. */
+                ++count;
+            }
+            else if(s1_ch2cnt[s2[r] - 'a'] == s2_ch2cnt[s2[r] - 'a'] - 1)
+            {
+                /* Delete a old match by adding one more letter occurence. */
+                /* It means s2_ch2cnt[s2[r] - 'a'] is one more than target. */
+                --count;
+            }
+            else
+            {
+                /* Do nothing. */
+
+            }
+
+            if (26 == count)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
 };
-
-int main()
-{
-    SolutionTwo sol;
-    string s1 = "ab", s2 = "eidbaooo";
-    /* string s1 = "ab", s2 = "eidboaoo"; */
-    cout << (true == sol.checkInclusion(s1, s2) ? "true" : "false") << endl;
-
-    return 0;
-}

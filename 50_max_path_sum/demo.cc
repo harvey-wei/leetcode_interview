@@ -1,6 +1,11 @@
-#include <iostream>
+#include <climits>
+#include <limits>
 #include <algorithm>
-using namespace std;
+
+
+/**
+ * Definition for a binary tree node.
+ */
 
 struct TreeNode {
     int val;
@@ -11,51 +16,46 @@ struct TreeNode {
     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
 };
 
+
 class Solution {
 public:
-    /*
-       subprolem: max_gain(root) = max_gain of length when including node root and maybe one of
-       its subtrees.
-       relate: max_gain(root) = root->val + max(max(max_gain(root->left), 0),
-            max(max_gain(root-right), 0))
-       If the gain is negative, we just stop there.
-       topological order: post-order traversal
-       base case: max_gain(null) = 0;
-       original problem: max_gain(Root of the given tree)
-       time: O(|V|)
-
-       However, we can start a new path at any node. Via this recurrence, we can track the max sum.
-    */
-    int max_gain(TreeNode* root, int& curr_max_sum)
+    Solution()
     {
-        /* base cases */
-        if (nullptr == root)
-        {
-            return 0;
-        }
+        max_sum = INT_MIN;
+    }
 
-        /* Negative gain is not included. */
-        int max_left = max<int>(max_gain(root->left, curr_max_sum), 0);
-        int max_right = max<int>(max_gain(root->right, curr_max_sum), 0);
+    /**
+     * SRTBOT
+     * Subproblem: f(root) =  gain_from_subtree(root) is the max length of path starting at root.
+     * Relation: f(root) = root->val + max(max(f(root.left), 0), max(f(root.right).0))
+     * Topologial order: From the last step, we can see we need to process both left and right
+     first.  -> post-order traversal
+     * Base case: null node f(null) = 0;
+     * Original Problem: max(f(root), root + f(root->left) >= 0 + f(root->right) >= 0)
+     * Here, we have two parellel recursion.
+     * One is gain from subtree. Another is left -> root-> right sum
+     */
+    int gain_from_subtree(TreeNode* root)
+    {
+        if (nullptr == root ) return 0;
 
-        /* Keep track of the real max sum. */
-        /* The length of starting a new path. zero is not inlcuded.
-           After traverse all nodes, we try all possible max paths.
-        */
-        int len_new = root->val + max_left + max_right;
-        curr_max_sum = max(curr_max_sum, len_new);
+        /* We negative gain to zero for the purpose of ignoring it. */
+        int gain_left = std::max(gain_from_subtree(root->left), 0);
+        int gain_right = std::max(gain_from_subtree(root->right), 0);
 
+        /* A new path: left -> root-> right upate the max_sum */
+        /* Note only positive left and right are added. */
+        /* If root is the root of the original tree. -> orignal problem*/
+        max_sum = std::max(max_sum, gain_left + gain_right + root->val);
 
-        /* For the recurrence */
-        return root->val + max<int>(max_left, max_right);
+        return root->val + std::max(gain_left, gain_right);
 
     }
 
-    int maxPathSum(TreeNode* root)
-    {
-        int max_sum = INT_MIN;
-
-        max_gain(root, max_sum);
+    int maxPathSum(TreeNode* root) {
+        gain_from_subtree(root);
         return max_sum;
     }
+private:
+    int max_sum;
 };

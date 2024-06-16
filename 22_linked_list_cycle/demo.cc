@@ -1,115 +1,75 @@
-/**
- * Definition for singly-linked list.
- * \ref https://leetcode.com/problems/linked-list-cycle-ii/editorial/
- */
+struct ListNode
+{
+    int val;
+    ListNode* next;
 
-struct ListNode {
-  int val;
-  ListNode *next;
-  ListNode(int x) : val(x), next(NULL) {}
+    ListNode() : val(0), next(nullptr) {}
+    ListNode(int x) : val(x), next(nullptr) {}
+    ListNode(int x, ListNode* next) : val(x), next(next) {}
 };
+
+
 
 class Solution {
 public:
-    /* Image the cycle as a circular track. */
-    bool hasCycle(ListNode *head)
-    {
-        /* Empty or singleton linked list implies no cycle. */
-        /* Short-circuiting is mandated by C++ standard! */
-        if (nullptr == head || nullptr == (head->next))
+    bool hasCycle(ListNode *head) {
+        /* Special case: empty or singleton linked list has no cycle. */
+        if (nullptr == head || nullptr == head->next)
         {
             return false;
         }
 
-        /* dummy -> head -> (head->next) */
-        /* Image both fast and slow go from dummy node. */
-        ListNode* fast = head->next;
-        ListNode* slow = head;
+        /* There must have a distance in the cyclic path. */
+        /* Hence, slow and fast should not start at the same node*/
 
-        /* How to determine the termination condition? */
-        /* Update fast and slow and then see when to stop! */
-        /* Check initial iteration and terminal iteration. */
-        while (nullptr != fast && nullptr != fast->next)
+        // slow and fast start outside of head
+        ListNode* slow = head; // Move one step at a time.
+        ListNode* fast = head->next; // Move two steps at a time.
+
+        while (nullptr != fast->next && nullptr != fast->next->next)
         {
-            /* Check whether slow == fast */
-            if (slow == fast) return true;
+            if (slow == fast)
+            {
+                return true;
+            }
 
-            /* update fast and slow pointers */
-            /* fast and fast->next can not be nullptr! */
-            fast = fast->next->next; // two nodes per iteration
-            slow = slow->next; // one node per iteration
+            // update slow and fast
+            slow = slow->next;
+            fast = fast->next->next;
         }
 
         return false;
     }
 
 
-    /**
-     * Definition:
-     * a = # of edges from head to the node where the cycle begins.
-     * c = # of edges in the cycle, namely the length of the cycle.
-     * b = # of edges from the entrance to the first meeting point.
-     * The condition for slow and fast pointers to meet when starting from a virtual dummy node.
-     * Lfast - Lslow = kc
-     * Lfast = 2Lslow since fast pointers runs twice as fast as slow pointer.
-     * => Lslow = kc
-     */
-
-    ListNode *detectCycle(ListNode *head)
+    bool hasCycle_(ListNode* head)
     {
-        /* No cycle for empty and singleton singly linked list. */
         if (nullptr == head || nullptr == head->next)
         {
-            return nullptr;
+            /* Empty or one-node singly list has no cycle. */
+            return false;
         }
 
-        ListNode* hare = head;
-        ListNode* tortoise = head;
+        ListNode* slow = head;
+        ListNode* fast = head;
 
-        /**
-         * Move hare two steps and tortoise one step per iteration until they meet
-         * if cycle exists.
-         * null next means end of the singly linked list.
-         */
-        while (nullptr != hare && nullptr != hare->next)
+        while (nullptr != fast->next && nullptr != fast->next->next)
         {
-            tortoise = tortoise->next;
-            hare = hare->next->next;
+            // update
+            slow = slow->next;
+            fast = fast->next->next;
 
-            if (tortoise == hare)
-            {
-                break;
-            }
+            // check
+            if (slow == fast) return true;
         }
 
-        /* Check if there are cycle! */
-        if (nullptr == hare || nullptr == hare->next)
-        {
-            /* The above while loop is terminated due to tail of lilst. Hence, no cycle. */
-            return nullptr;
-        }
-
-        /* tortoise and hare meet the node which is b nodes away from the entrance of the cycle.*/
-        /* Lslow = a + b = kc if tortoise walks another a edges, it will hit the entrance. */
-        /* Reset hare to head and move it one step. It will meet tortoise at the entrance since*/
-        /* they both walks a edges! */
-
-        hare = head;
-
-        while (hare != tortoise)
-        {
-            hare = hare->next;
-            tortoise = tortoise->next;
-        }
-
-        return hare;
+        return false;
     }
 
+
+
+    ListNode* detectCycle(ListNode* head)
+    {
+
+    }
 };
-
-int
-main()
-{
-
-    return 0;
-}

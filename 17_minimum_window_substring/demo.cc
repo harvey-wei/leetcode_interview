@@ -1,254 +1,176 @@
+#include <vector>
 #include <iostream>
 #include <string>
 #include <unordered_map>
+#include <utility> // std::pair, std::make_pair
+
+
 using namespace std;
 
-#define INT_MAX (std::numeric_limits<int>::max())
+class Solution_ {
+public:
+    string minWindow(string s, string t)
+    {
+        if (s.size() < t.size()) return "";
 
-/* ref: https://leetcode.com/problems/minimum-window-substring/ */
+        std::unordered_map<char, int> t_char2cnt;
+        for (const auto& ch : t)
+        {
+            if (t_char2cnt.end() == t_char2cnt.find(ch))
+            {
+                /* ch is not present in t_char2cnt. */
+                t_char2cnt[ch] = 1;
+            }
+            else
+            {
+                ++t_char2cnt[ch];
+            }
+        }
+
+        /* Our objective is to find a minWindow of s which have the same # of chs in t_char2cnt. */
+        /* In other words, we need zero all cnt in t_char2cnt.*/
+        /* [left, right]*/
+
+        int left = 0;
+        int right = 0;
+        int zero_cnt = 0;  // target_zero_cnt = t_char2cnt.size();
+        int min_len = s.size() + 1;
+        int l = -1, r = -1;
+
+        // We should ignore
+        while (right < s.size())
+        {
+            // s[right] is inserted into window
+            if (t_char2cnt.end() != t_char2cnt.find(s[right]))
+            {
+                /* Decrement cnt of s[right]*/
+                if (1 == t_char2cnt[s[right]])
+                {
+                    ++zero_cnt;
+                }
+
+                --t_char2cnt[s[right]];
+            }
+
+
+            // Since we use [left, right], left <= right.
+            while (zero_cnt == t_char2cnt.size() && left <= right)
+            {
+                /* Find a match. */
+                if (right - left + 1 < min_len)
+                {
+                    l = left;
+                    r = right;
+                    min_len = right - left + 1;
+                }
+
+                // effect of ++left
+                if (t_char2cnt.end() != t_char2cnt.find(s[left]))
+                {
+                    /* Increment cnt of s[left] */
+                    if (0 == t_char2cnt[s[left]])
+                    {
+                        --zero_cnt;
+                    }
+
+                    ++t_char2cnt[s[left]];
+                }
+
+                // increment left
+                ++left;
+            }
+
+            // udpate right
+            ++right;
+        }
+
+        return min_len == s.size() + 1 ? "" :s.substr(l, r - l + 1);
+    }
+};
+
+// Late Optimization!
+
 class Solution {
 public:
     string minWindow(string s, string t)
     {
-        unordered_map<char, int> t_char2cnt;
-        int bool_sum = 0;
-
-        if (s.length() < t.length())
+        if (s.size() < t.size() || 0 == s.size() || 0 == t.size())
         {
             return "";
         }
 
-        for (const auto &ch: t)
+        unordered_map<int, int> t_char2cnt;
+        for (const auto& ch : t)
         {
             if (t_char2cnt.end() == t_char2cnt.find(ch))
             {
                 t_char2cnt[ch] = 1;
             }
-            else {
-                t_char2cnt[ch] += 1;
-            }
-        }
-
-        int left = 0;
-        int min_len = INT_MAX;
-        int min_win_start_idx = -1;
-
-        for (int right = 0; right < s.length(); ++right)
-        {
-            if (t_char2cnt.end() != t_char2cnt.find(s[right]))
-            {
-                /* s[right] is the character in t */
-                if (1 == t_char2cnt[s[right]])
-                {
-                    /* 1->0 */
-                    bool_sum += 1;
-                }
-
-                t_char2cnt[s[right]] -= 1;
-            }
-
-            if (t_char2cnt.size() == bool_sum)
-            {
-                /* good sub-string */
-                if (right - left + 1 < min_len)
-                {
-                    min_len = right - left + 1;
-                    min_win_start_idx = left;
-                }
-            }
-
-            /* Shorten the good sub-string by ++left. */
-            while ((left <= right) && (t_char2cnt.size() == bool_sum))
-            {
-                if (t_char2cnt.end() != t_char2cnt.find(s[left]))
-                {
-                    if (0 == t_char2cnt[s[left]])
-                    {
-                        /* 0 -> 1 */
-                        --bool_sum;
-                    }
-                    t_char2cnt[s[left]] += 1;
-                }
-
-                if (t_char2cnt.size() == bool_sum)
-                {
-                    /* Still a good sub-string */
-                    if (right - left < min_len)
-                    {
-                        min_len = right - left;
-                        min_win_start_idx = left + 1;
-                    }
-                }
-
-                ++left;
-            }
-        }
-
-        return INT_MAX == min_len ? "" : s.substr(min_win_start_idx, min_len);
-    }
-};
-
-
-class SolutionTwo {
-public:
-    string minWindow(string s, string t)
-    {
-        if (s.size() < t.size()) return "";
-
-        /*
-         * For the sequence of subarrays ending at r, we should increment l until window is not
-         wanted or l > r;
-         */
-
-        /* state of the window */
-        std::unordered_map<int, int> char2cnt; // ASCII code value to number of occurences.
-        for (size_t i = 0; i < t.size(); ++i)
-        {
-            if (char2cnt.end() == char2cnt.find(t[i]))
-            {
-                char2cnt[t[i]] = 1;
-            }
             else
             {
-                ++char2cnt[t[i]];
+                ++t_char2cnt[ch];
             }
         }
 
-        int min_len = s.size() + 1;
-        int min_l = -1;
-        int min_r = -1;
-
-        int l = 0;
-        int count = char2cnt.size(); // The # of kinds of chars remaining to be filled!
-        for (int r = 0; r < s.size(); ++r)
+        // Map index of char present in t to char in s.
+        // We need the matatin the order and access in O(1)
+        // Hence, treeMap is ruled out since O(lgn)
+        // We can adopt the array of pair of (index, char)
+        std::vector<std::pair<int, char>> s_filterd;
+        for (int i = 0; i < s.size(); ++i)
         {
-            /* Insert s[r] to the window and update state */
-            if (char2cnt.end() != char2cnt.find(s[r]))
+            if (t_char2cnt.end() != t_char2cnt.find(s[i]))
             {
-                --char2cnt[s[r]];
-
-                /* 1-> 0 */
-                if (0 == char2cnt[s[r]]) --count;
-            }
-
-            /* Increment l until a answer is found or l > r */
-            while (l <= r && 0 == count)
-            {
-                if ((r - l + 1) < min_len)
-                {
-                    min_len = r - l + 1;
-                    min_l = l;
-                    min_r = r;
-                }
-
-                if (char2cnt.end() != char2cnt.find(s[l]))
-                {
-                    ++char2cnt[s[l]];
-
-                    /* 0 -> 1 */
-                    if (1 == char2cnt[s[l]]) ++count;
-
-                }
-
-                ++l;
+                s_filterd.push_back(std::make_pair(i, s[i]));
             }
         }
 
-        return min_l == -1 ? "" : s.substr(min_l, min_len);
-    }
-
-    /**
-     *  Input: s = "a", t = "aa"
-     *  Output: ""
-     *  Explanation: Both 'a's from t must be included in the window.
-     *  Since the largest window of s only has one 'a', return empty string.
-     *
-     */
-
-    /* state: hashmap from char in t to cnt of occurence!
-     * window : [l, r] ending at r
-     * Increment r to add char to window, update hashmap
-     * Increment l to exclude leftmost char until window is not desired!
-     *
-     */
-    string minWindow_(string s, string t)
-    {
-        if (s.size() < t.size()) return "";
-
-        int l = 0;
         int r = 0;
-
-        std::unordered_map<char, int> char2cnt;
-        for (size_t i = 0; i < t.size(); ++i)
-        {
-            if (char2cnt.end() == char2cnt.find(t[i]))
-            {
-                char2cnt[t[i]] = 1;
-            }
-            else
-            {
-                ++char2cnt[t[i]];
-            }
-        }
-
-        /* Each time the value of one key in char2cnt goes from 1 to 0, --count!*/
-        /* If gets from 0 to 1, ++count. */
-        /* If count == 0, all chars in t are included in window from s. */
-        int count = char2cnt.size();
+        int l = 0;
+        int zero_cnt = 0;
         int min_len = s.size() + 1;
         int min_l = -1;
         int min_r = -1;
-
-        for (; r < s.size(); ++r)
+        while (r < s_filterd.size())
         {
-            /* Include s[r] and update char2cnt */
-            if (char2cnt.end() != char2cnt.find(s[r]))
+            const auto& r_idx = s_filterd[r].first;
+            const auto& r_char = s_filterd[r].second;
+            // s_filterd[r].second is inserted to the window
+            // --t_char2cnt[s_filterd[second]]
+            if (1 == t_char2cnt[r_char])
             {
-                --char2cnt[s[r]];
-
-                if (0 == char2cnt[s[r]])
-                {
-                    --count;
-                }
+                ++zero_cnt;
             }
+            --t_char2cnt[r_char];
 
-            /* Increment l until count is not zero. */
-            while (l <= r && 0 == count)
+            while (l <= r && (t_char2cnt.size() == zero_cnt))
             {
-                if ((r - l + 1) < min_len)
+                const auto& l_idx = s_filterd[l].first;
+                const auto& l_char = s_filterd[l].second;
+                if (r_idx - l_idx + 1 < min_len)
                 {
-                    min_len = r - l  + 1;
-                    min_l = l;
-                    min_r = r;
+                    min_l = l_idx;
+                    min_r = r_idx;
+                    min_len = r_idx - l_idx + 1;
                 }
 
-                if (char2cnt.end() != char2cnt.find(s[l]))
+                // update t_char2cnt;
+                if (0 == t_char2cnt[l_char])
                 {
-                    ++char2cnt[s[l]];
-
-                    /* 0 to 1*/
-                    if (1 == char2cnt[s[l]])
-                    {
-                        ++count;
-                    }
+                    --zero_cnt;
                 }
+                ++t_char2cnt[l_char];
 
+                // update l
                 ++l;
             }
+
+
+            // Increment r
+            ++r;
         }
 
-        return min_l == -1 ? "" : s.substr(min_l, min_r  - min_l + 1);
+        return min_len == s.size() + 1 ? "" : s.substr(min_l, min_len);
     }
 };
-int main()
-{
-    SolutionTwo sol;
-    string s_one = "ADOBECODEBANC", t_one = "ABC";
-    string s_two = "a", t_two = "a";
-    string s_three = "a", t_three = "aa";
-    string s = "cabwefgewcwaefgcf", t = "cae";
-    cout << sol.minWindow(s_one, t_one) << endl;
-    cout << sol.minWindow(s_two, t_two) << endl;
-    cout << sol.minWindow(s, t) << endl;
-    return 0;
-}
+
