@@ -5,40 +5,45 @@ using namespace std;
 
 class Solution {
 public:
-    void swap_nums(vector<int>& nums, int i, int j)
-    {
-        int temp = nums[i];
-        nums[i] = nums[j];
-        nums[j] = temp;
-    }
 
-    void helper(vector<int>& nums, int curr_idx, vector<vector<int>>& result)
+    void helper(vector<int>& nums, vector<bool>& is_chosen, vector<int>& permute, vector<vector<int>>& result)
     {
-        if (curr_idx == nums.size())
-        {
-            /* Might need to fix! */
-            result.push_back(nums);
-        }
-        else
-        {
-            /* The numbers at position 0 - (curr_idx - 1) have been selected. */
-            unordered_set<int> choosed_ints;
-            for (int i = curr_idx; i < nums.size(); ++i)
-            {
-                if (choosed_ints.end() == choosed_ints.find(nums[i]))
-                {
-                    choosed_ints.insert(nums[i]);
-                    swap_nums(nums, curr_idx, i); // choose
-                    helper(nums, curr_idx + 1, result);  // explore
-                    swap_nums(nums, curr_idx, i); // unchoose
-                }
-            }
-        }
+		if (permute.size() == nums.size())
+		{
+			result.push_back(permute);
+		}
+		else
+		{
+			std::unordered_set<int> explored_ints;
+			for (int i = 0; i < nums.size(); ++i)
+			{
+				if (is_chosen[i] == false)
+				{
+					if (explored_ints.end() == explored_ints.find(nums[i]))
+					{
+						// choose
+						is_chosen[i] = true;
+						explored_ints.insert(nums[i]);
+						permute.push_back(nums[i]);
+
+						// explore
+						helper(nums, is_chosen, permute, result);
+
+						// unchoose
+						is_chosen[i] = false;
+						permute.pop_back();
+					}
+				}
+			}
+
+		}
     }
 
     vector<vector<int>> permuteUnique(vector<int>& nums) {
         vector<vector<int>> res;
-        helper(nums, 0, res);
+		vector<bool> is_chosen(nums.size(), false);
+		vector<int> permute;
+        helper(nums, is_chosen, permute, res);
 
         return res;
     }

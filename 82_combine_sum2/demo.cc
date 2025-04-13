@@ -1,53 +1,52 @@
 #include <iostream>
 #include <vector>
 #include <unordered_set>
+#include <algorithm>
 using namespace std;
 
 class Solution {
 public:
-    int get_next(const vector<int>& candidates, const int& curr_idx)
-    {
-        int next_idx = curr_idx;
+	int get_next(vector<int>& candidates, int idx)
+	{
+		int next = idx;
 
-        while (next_idx < candidates.size() && candidates[next_idx] == candidates[curr_idx])
-        {
-            ++next_idx;
-        }
+		// Do not forget to check the bound
+		while (next < candidates.size() && candidates[idx] == candidates[next])
+		{
+			++next;
+		}
 
-        /*
-           case 1: next_idx == candidates.size();
-           case 2: next_idx < candidates.size() but candidates[next_idx] != candidates[curr_idx]
-        */
-        return next_idx;
-    }
+		return next;
+	}
 
-    void helper(const vector<int>& candidates, int curr_target,int curr_idx, vector<int>& pre_com,
-            vector<vector<int>>& results)
-    {
-        /* if (candidates.size() == curr_idx) */
-        if (0 == curr_target)
-        {
-            /* base case */
-            results.push_back(pre_com); // Invoke copy constructor
-        }
-        else if (curr_target > 0 && curr_idx < candidates.size())
-        {
-            /* choice 1: skip the current number and all the subsequent number of the same values.*/
-            int next_idx = get_next(candidates, curr_idx);
-            helper(candidates, curr_target, next_idx, pre_com, results);
+	void helper(vector<int>& candidates, int target, int idx, vector<int>& com, vector<vector<int>>& res)
+	{
+		if (0 == target)
+		{
+			res.push_back(com);
+		}
+		else if (idx < candidates.size() && target > 0)
+		{
+			/* Note that each number can only be used once*/
+			/* To avoid duplicate tuple due to repteated numbers*/
+			helper(candidates, target, get_next(candidates, idx), com, res);
 
-            /* choice 2: Select the current number. */
-            pre_com.push_back(std::move(candidates[curr_idx]));
-            helper(candidates, curr_target - candidates[curr_idx] , curr_idx + 1, pre_com, results);
-            pre_com.pop_back();
-        }
+			// choose
+			com.push_back(candidates[idx]);
+			target -= candidates[idx];
 
-        return;
-    }
+			// explore note target is possed by value, no need to unchoose
+			helper(candidates, target, idx + 1, com, res);
 
+			// unchoose
+			com.pop_back();
+		}
+
+	}
     vector<vector<int>> combinationSum2(vector<int>& candidates, int target) {
         vector<vector<int>> res;
         std::sort(candidates.begin(), candidates.end());
+
         vector<int> pre_com;
         helper(candidates, target, 0, pre_com, res);
 

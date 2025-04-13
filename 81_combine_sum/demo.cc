@@ -5,33 +5,38 @@ using namespace std;
 
 class Solution {
 public:
-    void helper(const vector<int>& candidates, int curr_target, int curr_idx,
-            vector<int>& curr_subset, vector<vector<int>>& res)
-    {
-        if (0 == curr_target)
-        {
-            /* Be sure to copy! */
-            vector<int> temp(curr_subset);
-            res.push_back(std::move(temp));
-        }
-        else if (curr_idx < candidates.size() && curr_target > 0)
-        {
-            /* skip the current candidate. */
-            helper(candidates, curr_target, curr_idx + 1, curr_subset, res);
+	void combinationSumHelper(const vector<int>& candidates, int curr, vector<int>& com,
+			int& remain_sum, vector<vector<int>>& res)
+	{
+		if (0 == remain_sum)
+		{
+			res.push_back(com);
+		}
+		else if (curr < candidates.size() && remain_sum > 0)
+		{
+			/* Skip candidates[curr] */
+			combinationSumHelper(candidates, curr + 1, com, remain_sum, res);
 
-            /* choose the current candidate again */
-            curr_subset.push_back(std::move(candidates[curr_idx]));
-            helper(candidates, curr_target - candidates[curr_idx], curr_idx, curr_subset, res);
-            curr_subset.pop_back();
-        }
+			// choose candidates[curr]
+			com.push_back(candidates[curr]);
+			remain_sum -= candidates[curr];
 
-        return;
-    }
+			// explore but candidates[curr] can be reused it can may be skpped in next recursion
+			// remain_sum can be passed by value -> avoid unexplore
+			combinationSumHelper(candidates, curr, com, remain_sum, res);
+
+			// unexplore
+			com.pop_back();
+			remain_sum += candidates[curr];
+		}
+	}
+
     vector<vector<int>> combinationSum(vector<int>& candidates, int target) {
         vector<vector<int>> res;
         vector<int> curr_subset;
 
-        helper(candidates, target, 0, curr_subset, res);
+		int remain_sum = target;
+		combinationSumHelper(candidates, 0, curr_subset, remain_sum, res);
 
         return res;
     }

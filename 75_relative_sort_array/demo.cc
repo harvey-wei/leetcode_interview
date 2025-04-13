@@ -3,7 +3,49 @@
 
 using namespace std;
 
-class Solution {
+
+class Solution{
+public:
+    vector<int> relativeSortArray(vector<int>& arr1, vector<int>& arr2)
+	{
+		std::vector<int> counts(1001, 0);
+
+		for (const auto& num: arr1)
+		{
+			counts[num] += 1;
+		}
+
+		int arr1_ptr = -1;
+		for (int i = 0; i < arr2.size(); ++i)
+		{
+			while (counts[arr2[i]] > 0)
+			{
+				++arr1_ptr;
+				arr1[arr1_ptr] = arr2[i];
+
+				--counts[arr2[i]];
+			}
+		}
+
+		for (int i = 0; i < counts.size(); ++i)
+		{
+			while (counts[i] > 0)
+			{
+				++arr1_ptr;
+				arr1[arr1_ptr] = i;
+
+				--counts[i];
+			}
+
+		}
+
+
+		return arr1;
+	}
+};
+
+
+class Solution__ {
 public:
     vector<int> relativeSortArray(vector<int>& arr1, vector<int>& arr2)
 	{

@@ -5,6 +5,46 @@ using namespace std;
 
 class Solution {
 public:
+	void combine_helper(const int& n, const int& k, int curr, vector<int>&com,
+			vector<vector<int>>& results)
+	{
+		if (k == com.size())
+		{
+			results.push_back(com);
+		}
+		else if (curr <= n)
+		{
+			/* no choose curr */
+			combine_helper(n, k, curr + 1, com, results);
+
+			/* choose curr */
+			com.push_back(curr);
+			/* explore */
+			combine_helper(n, k, curr + 1, com, results);
+
+			/* unexplore */
+			com.pop_back();
+		}
+
+	}
+
+    vector<vector<int>> combine(int n, int k)
+	{
+		/* Choose k ints from [1, n] */
+		/* 1<= k <= n*/
+		vector<vector<int>> results;
+		vector<int> com;
+
+		combine_helper(n, k, 1, com, results);
+
+		return results;
+
+    }
+};
+
+
+class Solution_ {
+public:
 	void combine_helper(const int& n, const int& k, int curr, vector<int>& com,
 			vector<vector<int>>& results)
 	{

@@ -3,6 +3,83 @@
 
 using namespace std;
 
+class Solution {
+public:
+	int left_child(int i)
+	{
+		return 2 * i + 1;
+	}
+
+	int right_child(int i)
+	{
+		return 2 * i + 2;
+	}
+
+	void sift_down(vector<int>& nums, int n, int i)
+	{
+		/*nums[0, n) is for the heap*/
+		int left = left_child(i);
+		int right = right_child(i);
+
+		/* Find the max number index of i, left, and rgiht*/
+		int max_idx = i;
+
+		if (left < n && nums[left] > nums[max_idx])
+		{
+			max_idx = left;
+		}
+
+		if (right < n && nums[right] > nums[max_idx])
+		{
+			max_idx = right;
+		}
+
+		if (max_idx != i)
+		{
+			swap(nums[i], nums[max_idx]);
+
+			/* fix down Recursively*/
+			sift_down(nums, n, max_idx);
+		}
+	}
+
+	void build_heap(vector<int>& nums, int n)
+	{
+		/* nums[0, n) is for the heap */
+		/*i = floor(n / 2) - 1 to 0 is for non leaf*/
+
+		/* We build max-heap by sift_down from level to leaf*/
+		for (int i = n / 2 - 1; i >= 0; --i)
+		{
+			sift_down(nums, n, i);
+		}
+	}
+
+	/* Time: O(nlogn)
+	 * Space: stack depth O(logn)
+	 */
+	void heap_sort(vector<int>& nums)
+	{
+		build_heap(nums, nums.size());
+
+		for (int i = nums.size() - 1;  i >= 0; --i)
+		{
+			// get the ith laragest
+			swap(nums[0], nums[i]);
+
+			// consider nums[0, i) as heap, nums[i:] already right
+			// 0th maight be problemantic fix it by sift_down
+			sift_down(nums, i, 0);
+		}
+	}
+
+    vector<int> sortArray(vector<int>& nums)
+	{
+		heap_sort(nums);
+
+		return nums;
+    }
+};
 
 /**
  * \ref https://leetcode.com/problems/sort-an-array/editorial/
@@ -57,7 +134,7 @@ public:
 
 
 
-class Solution {
+class Solution__ {
 public:
  	void heapify(vector<int>& nums, int n, int i)
 	{
@@ -81,6 +158,7 @@ public:
 		if (i != largest)
 		{
 			swap(nums[i], nums[largest]);
+
 			/* Fix the afftected subtrees rooted at index largest */
 			heapify(nums, n, largest);
 		}
@@ -122,3 +200,8 @@ public:
 		return nums;
     }
 };
+
+int main()
+{
+	return 0;
+}
