@@ -17,35 +17,29 @@
 
 class Solution {
 public:
+	void dfs_preorder(TreeNode* root, int path_sum, int& total_sum)
+	{
+		// update path_sum
+		path_sum = 10 * path_sum + root->val;
 
-    // curr_sum = sum from root to current node (current node is LSD)
-    // Each node value is 0 - 9
-    void pre_dfs(TreeNode* root, int curr_sum, int& root2leaf)
-    {
-        if (nullptr != root)
-        {
-            // Image you shift orginal root to current node's parent to left (x10)
-            // update sum from root to current node
-            curr_sum = curr_sum * 10 + root->val;
-
-            // Reach a leaf and update root2leaf
-            if (nullptr == root->left && nullptr == root->right)
-            {
-                root2leaf += curr_sum;
-            }
-
-            // curr_sum must be passed by value to avoid un-choose.
-            pre_dfs(root->left, curr_sum, root2leaf);
-            pre_dfs(root->right, curr_sum, root2leaf);
-        }
-
-    }
+		// base case
+		if (nullptr == root->left && nullptr == root->right)
+		{
+			total_sum += path_sum;
+		}
+		else
+		{
+			if (nullptr != root->left) dfs_preorder(root->left, path_sum, total_sum);
+			if (nullptr != root->right) dfs_preorder(root->right, path_sum, total_sum);
+		}
+	}
 
     int sumNumbers(TreeNode* root)
     {
-        int root2leaf = 0;
-        pre_dfs(root, 0, root2leaf);
+		int total_sum = 0;
+		if (nullptr == root) return total_sum;
 
-        return root2leaf;
+		dfs_preorder(root, 0, total_sum);
+		return total_sum;
     }
 };

@@ -14,7 +14,7 @@ public:
         int r = nums.size();
         int m = 0;
 
-        /* we use semi-open interval [l, r) */
+        /* we use semi-open interval [l, r) to simplify the termination condition */
         while (r > l)
         {
 			/* continue if */

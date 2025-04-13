@@ -27,101 +27,90 @@ struct TreeNode {
 
 class Codec {
 public:
-    void preorder_dfs(TreeNode* root, string& data)
-    {
-        /* data should be initialized as a emtpy string "". */
-        if (nullptr == root)
-        {
-            // base case null node.
-            data = data +  "#" + ",";
-            return;
-        }
-        else
-        {
-            data += std::to_string(root->val);
-            data += ",";
+	void dfs_predorder(TreeNode* root, std::string& res)
+	{
+		if (nullptr != root)
+		{
+			res += std::to_string(root->val) + ",";
 
-            // nullptr is handled by the next call.
-            preorder_dfs(root->left, data);
-            preorder_dfs(root->right, data);
+			dfs_predorder(root->left, res);
+			dfs_predorder(root->right, res);
+		}
+		else
+		{
+			res += "#,";
+		}
+	}
 
-            return;
-        }
-    }
+	/* Image you have a virtual complete binary tree with nullptr as child of leaf. */
+	/* Be sure to define what each recuisive call do!*/
+	/* Each recuisive call create node for input root*/
+	/* Note that in reconstruction, we need to use reference to pointer. Otherwise,
+	 */
+	// Each recursive call do what? Can return what? Caryy what global info?
+	void dfs_predorder_reconstruct(TreeNode*& root, std::string& data, int& start, int& end)
+	{
+		bool is_end = next_int_or_null(data, start, end);
+		std::string val = data.substr(start, end - start);
+		if ("#" != val)
+		{
+			root = new TreeNode(std::stoi(val));
+
+			if (!is_end)
+			{
+				// The serialization ensures at least two in data
+				dfs_predorder_reconstruct(root->left, data, start, end);
+				dfs_predorder_reconstruct(root->right, data, start, end);
+			}
+		}
+	}
 
     // Encodes a tree to a single string.
-    string serialize(TreeNode* root)
-    {
-        string data = "";
-        preorder_dfs(root, data);
+    string serialize(TreeNode* root) {
+		std::string res = "";
+		if (nullptr == root) return res;
 
-        return data;
+		dfs_predorder(root, res);
+
+		return res;
     }
 
-    /**
-     * How to construct the tree?
-     * With the help of the null node (coded as "#"), we can image we have a binary tree.
-     * We just do recusive dfs as dfs-serialization. Each call create a node (it might be null)
-     */
+	/**
+	 * (,)123,456,#,89,#, note (,) is virtual one char to match the pattern
+	 * initially, start = -1,  end = -1;
+	 * call next_int, start = end + 1 = 0, end -> 3, data[start, end) = 123 is int
+	 * call next_int, start = end + 1 = 4, end -> 7, data[4, 7) = 456
+	 * if end == data.size() -1, exhaustied
+	 * start and end should be a global state variable and pass by reference.
+	 * [start, end)
+	 */
+	bool next_int_or_null(const string& data, int& start, int& end)
+	{
+		// data[end] is ensured to ',' except initially
+		start = end + 1;
+		++end;
+		while (',' != data[end])
+		{
+			++end;
+		}
 
-    TreeNode* dfs_des(queue<string>& data_q)
-    {
-        /* You have to ensure data_q is not empty before pass it to dfs_des */
-        string curr_str = data_q.front();
-        data_q.pop();
-        if ("#" == curr_str)
-        {
-            return nullptr;
-        }
+		// data[end] == ','
+		// whether data is exhaustied
+		return end == (data.size() - 1);
+	}
 
-        TreeNode* root = new TreeNode(stoi(curr_str));
-
-        if (!data_q.empty())
-        {
-            root->left = dfs_des(data_q);
-        }
-
-        if (!data_q.empty())
-        {
-            root->right = dfs_des(data_q);
-        }
-
-
-        return root;
-    }
-
-    // Decodes your encoded data (string type) to tree.
+    // Decodes your encoded data to tree.
     TreeNode* deserialize(string data)
-    {
-        /* step 1: extract node value from data and push to queue. */
-        /* queue has first-in-first-out. Hence, it maintains the visiting order of serialization*/
-        queue<string> data_q;
-        string curr = ""; // vector char
+	{
+		if (0 == data.size()) return nullptr;
 
-        for (int i = 0; i < data.size(); ++i)
-        {
-            /* There might be negatives */
-            /* if ('-' == data[i] || isdigit(data[i]) || '#' == data[i]) */
-            if (',' != data[i])
-            {
-                curr.push_back(data[i]);
-            }
-            else
-            {
-                /* data[i0] == ',' marks the end of one node value. */
-                data_q.push(curr);
-                curr = "";
-            }
-        }
+		TreeNode* root = nullptr;
+		int start = -1;
+		int end = -1;
 
-        // Note that the tree might be empty!
-        TreeNode* root = nullptr;
-        if (!data_q.empty())
-        {
-            root = dfs_des(data_q);
-        }
+		dfs_predorder_reconstruct(root, data, start, end);
 
-        return root;
+		return root;
     }
 };
 
